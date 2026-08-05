@@ -31,12 +31,7 @@ export default function Funnel() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  // Address Autocomplete State
-  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
-
+  // Address input logic
   const updateData = (fields: Partial<LeadData>) => {
     setData((prev) => ({ ...prev, ...fields }));
   };
@@ -44,38 +39,8 @@ export default function Funnel() {
   const nextStep = () => setStep((s) => s + 1);
   const prevStep = () => setStep((s) => Math.max(1, s - 1));
 
-  // Address fetch logic
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    updateData({ address: query });
-    
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    
-    if (query.length > 4) {
-      setIsSearchingAddress(true);
-      searchTimeout.current = setTimeout(async () => {
-        try {
-          const waQuery = query.toLowerCase().includes("wa") || query.toLowerCase().includes("western australia") ? query : `${query}, Western Australia`;
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(waQuery)}&format=json&addressdetails=1&countrycodes=au&limit=5`);
-          const results = await res.json();
-          setAddressSuggestions(results);
-          setShowSuggestions(true);
-        } catch(err) {
-          console.error("Address fetch error", err);
-        } finally {
-          setIsSearchingAddress(false);
-        }
-      }, 600);
-    } else {
-      setAddressSuggestions([]);
-      setShowSuggestions(false);
-      setIsSearchingAddress(false);
-    }
-  };
-
-  const selectAddress = (addr: string) => {
-    updateData({ address: addr });
-    setShowSuggestions(false);
+    updateData({ address: e.target.value });
   };
 
   const submitLead = async (e: React.FormEvent) => {
@@ -259,38 +224,11 @@ export default function Funnel() {
                       type="text" 
                       value={data.address}
                       onChange={handleAddressChange}
-                      onFocus={() => { if(addressSuggestions.length > 0) setShowSuggestions(true); }}
-                      placeholder="Start typing your address..."
+                      placeholder="e.g. 123 Smith Street, Perth WA 6000"
+                      autoComplete="street-address"
                       className="w-full px-4 py-3 pr-10 rounded-xl border-2 border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 outline-none transition-all text-lg"
                     />
-                    {isSearchingAddress && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <Loader2 className="w-5 h-5 animate-spin text-primary-500" />
-                      </div>
-                    )}
                   </div>
-
-                  {/* Autocomplete Dropdown */}
-                  <AnimatePresence>
-                    {showSuggestions && addressSuggestions.length > 0 && (
-                      <motion.ul 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
-                      >
-                        {addressSuggestions.map((suggestion, idx) => (
-                          <li 
-                            key={idx}
-                            onClick={() => selectAddress(suggestion.display_name)}
-                            className="px-4 py-3 hover:bg-primary-50 cursor-pointer border-b border-slate-100 last:border-0 text-sm text-slate-700"
-                          >
-                            {suggestion.display_name}
-                          </li>
-                        ))}
-                      </motion.ul>
-                    )}
-                  </AnimatePresence>
                 </div>
                 
                 <button disabled={data.address.length < 5} onClick={nextStep} className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center text-lg shadow-lg shadow-primary-600/30">

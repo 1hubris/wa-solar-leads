@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "WA Solar Eligibility | Check Your Home",
-  description: "Check if your Western Australian home qualifies for the latest solar and battery assessments.",
+  title: "Sunny State Quotes | WA Solar Assessments",
+  description: "Check if your Western Australian home qualifies for the latest solar and battery assessments with Sunny State Quotes.",
 };
 
 export default function RootLayout({

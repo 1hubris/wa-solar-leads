@@ -1,5 +1,5 @@
 import Funnel from "@/components/Funnel";
-import { Shield, Award, CheckCircle, Zap, Wrench, FileCheck, Lock, ArrowRight, UserCheck, Banknote, Star } from "lucide-react";
+import { Shield, Award, CheckCircle, Zap, Wrench, FileCheck, Lock, ArrowRight, UserCheck, Banknote, Star, Sun } from "lucide-react";
 
 export default function Home() {
   return (
@@ -11,15 +11,15 @@ export default function Home() {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-accent-500 rounded flex items-center justify-center shadow-lg">
-                <Zap className="text-primary-900 w-7 h-7" />
+              <div className="w-12 h-12 bg-accent-500 rounded-full flex items-center justify-center shadow-lg border-2 border-primary-900">
+                <Sun className="text-primary-900 w-7 h-7" />
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-2xl tracking-tight leading-none text-white">
-                  WA SOLAR
+                  SUNNY STATE
                 </span>
-                <span className="font-semibold text-accent-400 text-sm tracking-widest uppercase leading-none mt-1">
-                  Assessments
+                <span className="font-bold text-accent-400 text-sm tracking-widest uppercase leading-none mt-1">
+                  Quotes
                 </span>
               </div>
             </div>
@@ -69,9 +69,15 @@ export default function Home() {
               {/* Installer Trust Badge */}
               <div className="flex flex-col sm:flex-row items-center gap-4 bg-primary-800/40 border border-primary-700/50 rounded-xl p-4 mb-10 w-fit mx-auto lg:mx-0 shadow-inner">
                 <div className="flex gap-1">
-                  {[1,2,3,4,5].map(i => (
-                    <Star key={i} className={`w-5 h-5 ${i === 5 ? 'text-accent-500 fill-accent-500/50' : 'text-accent-500 fill-accent-500'}`} />
+                  {[1,2,3,4].map(i => (
+                    <Star key={i} className="w-5 h-5 text-accent-500 fill-accent-500" />
                   ))}
+                  <div className="relative w-5 h-5">
+                    <Star className="w-5 h-5 text-accent-500 absolute inset-0" />
+                    <div className="absolute inset-0 overflow-hidden w-[50%]">
+                      <Star className="w-5 h-5 text-accent-500 fill-accent-500" />
+                    </div>
+                  </div>
                 </div>
                 <div className="text-center sm:text-left text-white leading-tight">
                   <span className="font-bold text-sm block">Minimum 4.4★ Installer Rating</span>
@@ -114,16 +120,99 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust Band (Logos) */}
-      <section className="bg-white border-b border-slate-200 py-8">
+      {/* Hardware Tiers Matrix */}
+      <section className="bg-white border-b border-slate-200 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">Utilizing premium tier-1 equipment and brands</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale">
-            <div className="text-2xl font-black tracking-tighter text-slate-800">SOFAR</div>
-            <div className="text-2xl font-black italic text-slate-800">Growatt</div>
-            <div className="text-2xl font-extrabold tracking-widest text-slate-800">SOLAX</div>
-            <div className="text-2xl font-bold font-serif text-slate-800">ALPHA</div>
-            <div className="text-2xl font-semibold tracking-tight text-slate-800">SigenStor</div>
+          <div className="text-center mb-10">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Utilizing premium tier-1 equipment and brands</h2>
+            <h3 className="text-2xl md:text-3xl font-extrabold text-slate-800">Choose your performance tier</h3>
+          </div>
+
+          <div className="overflow-x-auto pb-4">
+            <div className="min-w-[800px] border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-slate-50">
+              
+              {/* Header Row (Tiers) */}
+              <div className="grid grid-cols-4 bg-slate-100 border-b border-slate-200">
+                <div className="p-4"></div>
+                <div className="p-4 text-center border-l border-slate-200">
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tier 1</div>
+                  <div className="text-lg font-black text-slate-800">Value</div>
+                </div>
+                <div className="p-4 text-center border-l border-slate-200 bg-blue-50/50">
+                  <div className="text-xs font-bold text-blue-500 uppercase tracking-widest">Tier 2</div>
+                  <div className="text-lg font-black text-blue-900">Advanced</div>
+                </div>
+                <div className="p-4 text-center border-l border-slate-200 bg-purple-50/50">
+                  <div className="text-xs font-bold text-purple-500 uppercase tracking-widest">Tier 3</div>
+                  <div className="text-lg font-black text-purple-900">Premium</div>
+                </div>
+              </div>
+
+              {/* Row 1: Panels */}
+              <div className="grid grid-cols-4 border-b border-slate-200 bg-white">
+                <div className="p-6 flex items-center justify-start border-r border-slate-200 bg-slate-50">
+                  <span className="font-bold text-slate-700 uppercase tracking-widest text-sm">Solar Panels</span>
+                </div>
+                <div className="p-6 flex flex-wrap justify-center gap-4 items-center opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition duration-300">
+                  <span className="font-bold text-slate-800 text-lg">JinkoSolar</span>
+                  <span className="font-bold text-slate-800 text-lg">Trina Solar</span>
+                  <span className="font-extrabold text-slate-800 text-lg">LONGi</span>
+                </div>
+                <div className="p-6 flex flex-wrap justify-center gap-4 items-center border-l border-slate-200 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition duration-300">
+                  <span className="font-bold text-slate-800 text-lg">QCELLS</span>
+                  <span className="font-bold italic text-slate-800 text-lg">REC</span>
+                  <span className="font-semibold text-slate-800 text-lg">Hyundai</span>
+                </div>
+                <div className="p-6 flex flex-wrap justify-center gap-4 items-center border-l border-slate-200 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition duration-300">
+                  <span className="font-bold text-slate-800 text-lg">SunPower</span>
+                  <span className="font-bold italic text-slate-800 text-lg">REC (Alpha)</span>
+                </div>
+              </div>
+
+              {/* Row 2: Inverters */}
+              <div className="grid grid-cols-4 border-b border-slate-200 bg-white">
+                <div className="p-6 flex items-center justify-start border-r border-slate-200 bg-slate-50">
+                  <span className="font-bold text-slate-700 uppercase tracking-widest text-sm">Inverters</span>
+                </div>
+                <div className="p-6 flex flex-wrap justify-center gap-4 items-center opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition duration-300">
+                  <span className="font-black text-slate-800 text-lg">GoodWe</span>
+                  <span className="font-black italic text-slate-800 text-lg">Growatt</span>
+                  <span className="font-black tracking-tighter text-slate-800 text-lg">SOFAR</span>
+                  <span className="font-extrabold tracking-widest text-slate-800 text-lg">SOLAX</span>
+                </div>
+                <div className="p-6 flex flex-wrap justify-center gap-4 items-center border-l border-slate-200 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition duration-300">
+                  <span className="font-black text-slate-800 text-lg">SUNGROW</span>
+                  <span className="font-bold text-slate-800 text-lg">HUAWEI</span>
+                  <span className="font-black tracking-widest text-slate-800 text-lg">FRONIUS</span>
+                </div>
+                <div className="p-6 flex flex-wrap justify-center gap-4 items-center border-l border-slate-200 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition duration-300">
+                  <span className="font-extrabold text-slate-800 text-lg">ENPHASE</span>
+                  <span className="font-bold text-slate-800 text-lg">SolarEdge</span>
+                </div>
+              </div>
+
+              {/* Row 3: Batteries */}
+              <div className="grid grid-cols-4 bg-white">
+                <div className="p-6 flex items-center justify-start border-r border-slate-200 bg-slate-50">
+                  <span className="font-bold text-slate-700 uppercase tracking-widest text-sm">Batteries</span>
+                </div>
+                <div className="p-6 flex flex-wrap justify-center gap-4 items-center opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition duration-300">
+                  <span className="font-bold font-serif text-slate-800 text-lg">ALPHA</span>
+                  <span className="font-black text-slate-800 text-lg">GoodWe</span>
+                  <span className="font-black italic text-slate-800 text-lg">Growatt</span>
+                </div>
+                <div className="p-6 flex flex-wrap justify-center gap-4 items-center border-l border-slate-200 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition duration-300">
+                  <span className="font-black text-slate-800 text-lg">SUNGROW</span>
+                  <span className="font-bold text-slate-800 text-lg">HUAWEI</span>
+                </div>
+                <div className="p-6 flex flex-wrap justify-center gap-4 items-center border-l border-slate-200 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition duration-300">
+                  <span className="font-black tracking-tighter text-slate-800 text-lg">TESLA</span>
+                  <span className="font-semibold tracking-tight text-slate-800 text-lg">SigenStor</span>
+                  <span className="font-extrabold text-slate-800 text-lg">ENPHASE</span>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       </section>
@@ -206,7 +295,7 @@ export default function Home() {
             <Lock className="w-4 h-4" />
             <span>Your data is secured with 256-bit encryption</span>
           </div>
-          <p className="mb-4 font-semibold text-slate-300">© {new Date().getFullYear()} WA Solar Assessments. All rights reserved.</p>
+          <p className="mb-4 font-semibold text-slate-300">© {new Date().getFullYear()} Sunny State Quotes. All rights reserved.</p>
           <p className="max-w-3xl mx-auto text-xs leading-relaxed opacity-60">
             This site is an independent solar information and design service. Your information is kept strictly confidential and is only used to find you the best product and company for your specific area in Western Australia. We adhere strictly to the Australian Privacy Principles and the Spam Act 2003.
           </p>
