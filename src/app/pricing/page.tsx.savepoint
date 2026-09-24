@@ -1,99 +1,288 @@
 "use client";
 
-import { useState } from "react";
-import { Calculator, DollarSign, ShieldCheck, Wrench, Settings, Users, ArrowUpRight, CreditCard, PlusCircle, Package, Download, Mail, Activity, Check } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Calculator, DollarSign, ShieldCheck, Wrench, Settings, Users, ArrowUpRight, CreditCard, PlusCircle, Package, Download, Mail } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { CustomerQuoteTemplate, InstallerWorkOrderTemplate, CustomerTermsTemplate } from "@/components/QuotePDFTemplates";
-import { usePricingEngine } from "@/hooks/usePricingEngine";
+import { QuoteData } from "@/lib/types";
+import { CustomerQuoteTemplate, InstallerWorkOrderTemplate } from "@/components/QuotePDFTemplates";
 
 export default function PricingCalculator() {
-  const {
-    pvSize, setPvSize, batterySize, setBatterySize, hardwareTier, setHardwareTier,
-    viewMode, setViewMode, t1PvRate, setT1PvRate, t1BattRate, setT1BattRate,
-    t2PvRate, setT2PvRate, t2BattRate, setT2BattRate, t3PvRate, setT3PvRate,
-    t3BattRate, setT3BattRate, stcValue, setStcValue, waRetailer, setWaRetailer,
-    financeVendor, setFinanceVendor, loanType, setLoanType, loanTerm, setLoanTerm,
-    isDoubleStory, setIsDoubleStory, isTerracotta, setIsTerracotta,
-    isSbUpgrade1Ph, setIsSbUpgrade1Ph, isSbUpgrade3Ph, setIsSbUpgrade3Ph,
-    isSmartMeter, setIsSmartMeter, isTiltFrames, setIsTiltFrames,
-    customExtrasList, setCustomExtrasList, brandSpecific, setBrandSpecific,
-    requestedBrand, setRequestedBrand,
-    sellPrice, setSellPrice, showEmailModal, setShowEmailModal,
-    emailTo, setEmailTo, isSending, setIsSending, emailSuccess, setEmailSuccess,
-    handleVendorChange, handleLoanTypeChange,
-    activeTierName, pvCertificates, pvStcDiscount, batteryCertificates, batteryStcDiscount,
-    stateBatteryRebate, totalRebates, totalExtrasCost, activeExtras,
-    vendorFeePct, customerInterestRate, estLaborCost, estHardwareCost,
-    installerRequiredGross, totalBaseCost, trueGrossCashFloor, baseCommission,
-    cashFloorPrice, netFloorPrice, actualVendorFeeAmount, cashReceivedFromFinance,
-    monthlyRepayment, totalCustomerCost,
-    rawOvers, cappedOvers, consultantOvers, leadGenOvers, installerOvers,
-    totalConsultantPayout, totalLeadGenPayout, installerGrossCashIn,
-    installerNetRevenue, estInstallerProfit, quoteData, marketingFee, baseFee
-  } = usePricingEngine();
-
-  const [newExtraName, setNewExtraName] = useState("");
-  const [newExtraCost, setNewExtraCost] = useState("");
-
-  const handleAddCustomExtra = () => {
-    if (newExtraName.trim() && !isNaN(Number(newExtraCost)) && Number(newExtraCost) > 0) {
-      setCustomExtrasList([...customExtrasList, { id: crypto.randomUUID(), name: newExtraName.trim(), cost: Number(newExtraCost) }]);
-      setNewExtraName("");
-      setNewExtraCost("");
-    }
-  };
+  // System Specs
+  const [pvSize, setPvSize] = useState<number>(6.6);
+  const [batterySize, setBatterySize] = useState<number>(10);
+  const [hardwareTier, setHardwareTier] = useState<number>(1);
+  const [viewMode, setViewMode] = useState<"Admin" | "Consultant">("Admin");
   
-  const handleRemoveCustomExtra = (id: string) => {
-    setCustomExtrasList(customExtrasList.filter(e => e.id !== id));
+  // The fixed acquisition/marketing fee paid to the Lead Gen entity
+  // Massively increased to absorb the margin stripped from the capacity-filler installers
+  const marketingFee = hardwareTier === 3 ? 5000 : hardwareTier === 2 ? 4200 : 3500;
+
+  // 2. Base Costs & Installer Allowances
+  // Capacity Filler Profit Buffer: Scales dynamically per-kW to match actual warranty liability.
+  const baseWarrantyPerKw = hardwareTier === 3 ? 200 : hardwareTier === 2 ? 160 : 130;
+  const batteryWarrantyBuffer = batterySize > 0 ? 300 : 0;
+  const baseFee = Math.round((pvSize * baseWarrantyPerKw) + batteryWarrantyBuffer);
+
+  // Wholesale Hardware Tuning (True Cost to Procure)
+  const [t1PvRate, setT1PvRate] = useState<number>(400); // e.g. Jinko
+  const [t1BattRate, setT1BattRate] = useState<number>(450); // e.g. AlphaESS
+  
+  const [t2PvRate, setT2PvRate] = useState<number>(550); // e.g. QCells/Sungrow
+  const [t2BattRate, setT2BattRate] = useState<number>(550); 
+  
+  const [t3PvRate, setT3PvRate] = useState<number>(750); // e.g. Maxeon
+  const [t3BattRate, setT3BattRate] = useState<number>(650); // e.g. Tesla/SigenStor
+
+  // Rebate Tuning
+  const [stcValue, setStcValue] = useState<number>(39);
+  const [waRetailer, setWaRetailer] = useState<string>("Synergy");
+  
+  // Automated Finance Matrix State
+  const [financeVendor, setFinanceVendor] = useState<string>("Cash");
+  const [loanType, setLoanType] = useState<string>("");
+  const [loanTerm, setLoanTerm] = useState<number>(0);
+  
+  // Extras & Upgrades
+  const [isDoubleStory, setIsDoubleStory] = useState<boolean>(false);
+  const [isTerracotta, setIsTerracotta] = useState<boolean>(false);
+  const [isSbUpgrade1Ph, setIsSbUpgrade1Ph] = useState<boolean>(false);
+  const [isSbUpgrade3Ph, setIsSbUpgrade3Ph] = useState<boolean>(false);
+  const [isSmartMeter, setIsSmartMeter] = useState<boolean>(false);
+  const [isTiltFrames, setIsTiltFrames] = useState<boolean>(false);
+
+  // Consultant Sell Price (Starts at 0 so it auto-snaps to the floor on load)
+  const [sellPrice, setSellPrice] = useState<number>(0);
+
+  // Email Modal State
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState(false);
+
+  // --- LOGIC ENGINE ---
+
+  // 1. Hardware Tier Resolution
+  let activePvRate = t1PvRate;
+  let activeBattRate = t1BattRate;
+  let activeTierName = "Tier 1: Value (Jinko/GoodWe/SolaX/AlphaESS)";
+  
+  if (hardwareTier === 2) {
+    activePvRate = t2PvRate;
+    activeBattRate = t2BattRate;
+    activeTierName = "Tier 2: Advanced (QCells/Sungrow/Huawei/Fronius)";
+  } else if (hardwareTier === 3) {
+    activePvRate = t3PvRate;
+    activeBattRate = t3BattRate;
+    activeTierName = "Tier 3: Premium (Maxeon/Enphase/Tesla/SigenStor)";
+  }
+
+  // 2. Rebates 
+  const pvCertificates = Math.floor(pvSize * 1.382 * 5);
+  const pvStcDiscount = pvCertificates * stcValue;
+  
+  // New 2026 Battery STC Scheme
+  // Clean Energy Regulator assigns STCs based on tested *usable* capacity, which fluctuates by brand.
+  // We use a blended average of 5.2 STCs per kWh for rapid lead-gen estimation.
+  const batteryCertificates = batterySize > 0 ? Math.floor(batterySize * 5.2) : 0;
+  const batteryStcDiscount = batteryCertificates * stcValue;
+  
+  let stateBatteryRebate = 0;
+  if (batterySize > 0) {
+    if (waRetailer === "Synergy") stateBatteryRebate = 1300;
+    if (waRetailer === "Horizon") stateBatteryRebate = 3800;
+  }
+  
+  const totalRebates = pvStcDiscount + batteryStcDiscount + stateBatteryRebate;
+
+  // 3. Extras Calculation
+  let totalExtrasCost = 0;
+  const activeExtras: string[] = [];
+  
+  if (isDoubleStory) { totalExtrasCost += 400; activeExtras.push("Double Story"); }
+  if (isTerracotta) { totalExtrasCost += 300; activeExtras.push("Terracotta/Steep"); }
+  if (isSbUpgrade1Ph) { totalExtrasCost += 900; activeExtras.push("Switchboard (1-Phase)"); }
+  if (isSbUpgrade3Ph) { totalExtrasCost += 1200; activeExtras.push("Switchboard (3-Phase)"); }
+  if (isSmartMeter) { totalExtrasCost += 350; activeExtras.push("Smart Meter"); }
+  if (isTiltFrames) { 
+    const tiltCost = Math.floor(pvSize * 60);
+    totalExtrasCost += tiltCost; 
+    activeExtras.push(`Tilt Frames ($${tiltCost})`); 
+  }
+
+  // 4. Automated Finance Matrix Resolution (High-Precision)
+  let vendorFeePct = 0;
+  let customerInterestRate = 0;
+  
+  if (financeVendor === "CommBank") {
+    customerInterestRate = 0.0399;
+  } else if (financeVendor === "NAB_Westpac") {
+    customerInterestRate = 0.0599;
+  } else if (financeVendor === "Broker") {
+    customerInterestRate = 0.0699;
+  } else if (financeVendor === "Plenti") {
+    if (loanType === "Standard Green Loan") { vendorFeePct = 0.015; customerInterestRate = 0.0999; }
+    else if (loanType === "0% Interest") {
+      if (loanTerm === 12) vendorFeePct = 0.05;
+      else if (loanTerm === 24) vendorFeePct = 0.09;
+      else if (loanTerm === 36) vendorFeePct = 0.12;
+      else if (loanTerm === 48) vendorFeePct = 0.15;
+      else if (loanTerm === 60) vendorFeePct = 0.18;
+      else if (loanTerm === 72) vendorFeePct = 0.21;
+      else if (loanTerm === 84) vendorFeePct = 0.24;
+      else if (loanTerm === 120) vendorFeePct = 0.32;
+    }
+  } else if (financeVendor === "Brighte") {
+    if (loanType === "Standard Green Loan") { vendorFeePct = 0.015; customerInterestRate = 0.0999; }
+    else if (loanType === "0% Interest") {
+      if (loanTerm === 12) vendorFeePct = 0.055;
+      else if (loanTerm === 24) vendorFeePct = 0.095;
+      else if (loanTerm === 36) vendorFeePct = 0.125;
+      else if (loanTerm === 48) vendorFeePct = 0.155;
+      else if (loanTerm === 60) vendorFeePct = 0.185;
+      else if (loanTerm === 72) vendorFeePct = 0.215;
+      else if (loanTerm === 84) vendorFeePct = 0.245;
+      else if (loanTerm === 120) vendorFeePct = 0.335;
+    }
+  } else if (financeVendor === "Humm") {
+    if (loanType === "Standard Interest") { vendorFeePct = 0.02; customerInterestRate = 0.0999; }
+    else if (loanType === "0% Interest") {
+      if (loanTerm === 12) vendorFeePct = 0.06;
+      else if (loanTerm === 24) vendorFeePct = 0.10;
+      else if (loanTerm === 36) vendorFeePct = 0.135;
+      else if (loanTerm === 48) vendorFeePct = 0.165;
+      else if (loanTerm === 60) vendorFeePct = 0.195;
+      else if (loanTerm === 72) vendorFeePct = 0.225;
+      else if (loanTerm === 84) vendorFeePct = 0.255;
+      else if (loanTerm === 120) vendorFeePct = 0.355;
+    }
+  } else if (financeVendor === "Zip") {
+    if (loanType === "Standard Interest") { vendorFeePct = 0.035; customerInterestRate = 0.0999; }
+    else if (loanType === "0% Interest") {
+      if (loanTerm === 12) vendorFeePct = 0.05;
+      else if (loanTerm === 24) vendorFeePct = 0.085;
+      else if (loanTerm === 36) vendorFeePct = 0.115;
+      else if (loanTerm === 48) vendorFeePct = 0.145;
+      else if (loanTerm === 60) vendorFeePct = 0.175;
+      else if (loanTerm === 72) vendorFeePct = 0.205;
+      else if (loanTerm === 84) vendorFeePct = 0.235;
+      else if (loanTerm === 120) vendorFeePct = 0.325;
+    }
+  }
+
+  // 5. Infinite Series Cost-Plus Calculation
+  
+  // Explicit Labor Funding
+  const estLaborCost = 1500 + (pvSize > 6.6 ? (pvSize - 6.6) * 120 : 0) + (batterySize > 0 ? 830 : 0);
+  
+  // Explicit Hardware Funding
+  const estHardwareCost = (pvSize * activePvRate) + (batterySize * activeBattRate);
+  
+  const installerRequiredGross = baseFee + estLaborCost + estHardwareCost + totalExtrasCost;
+  
+  // The absolute minimum money required to pay for Hardware, Install, and Lead Gen
+  const totalBaseCost = installerRequiredGross + marketingFee;
+  
+  // Gross up by 4.0% to generate the Consultant's Base Commission. 
+  // (Balanced at 4.0% to provide a solid floor while leaving a healthy overs pool)
+  const trueGrossCashFloor = totalBaseCost / (1 - 0.040);
+  const baseCommission = trueGrossCashFloor * 0.040; // Consultant gets 4.0% of True Gross
+
+  // The Customer's Cash Floor is the True Gross minus whatever the government pays for.
+  const cashFloorPrice = Math.max(0, trueGrossCashFloor - totalRebates);
+
+  // Net Floor Price (Grossed up infinitely to perfectly absorb the Finance Vendor Fee)
+  const netFloorPrice = cashFloorPrice > 0 ? (cashFloorPrice / (1 - vendorFeePct)) : 0;
+
+  // The actual dollar amount the Finance Company will deduct from the final financed quote
+  const actualVendorFeeAmount = sellPrice * vendorFeePct;
+  const cashReceivedFromFinance = sellPrice - actualVendorFeeAmount;
+
+  // Calculate Customer Repayments (Principal + Interest amortized)
+  let monthlyRepayment = 0;
+  let totalCustomerCost = sellPrice;
+  if (financeVendor !== "Cash" && loanTerm > 0) {
+    if (customerInterestRate > 0) {
+      const r = customerInterestRate / 12;
+      const n = loanTerm;
+      monthlyRepayment = (sellPrice * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+      totalCustomerCost = monthlyRepayment * n;
+    } else {
+      monthlyRepayment = sellPrice / loanTerm;
+      totalCustomerCost = sellPrice;
+    }
+  }
+
+  // 6. COMMISSION SPLIT LOGIC
+  const rawOvers = cashReceivedFromFinance - cashFloorPrice;
+  const cappedOvers = Math.max(0, Math.min(3000, rawOvers)); 
+  
+  // Final Locked Split: 50% Lead Gen, 30% Consultant, 20% Installer
+  // Installers are capacity fillers, Lead Gen holds the true value.
+  const consultantOvers = cappedOvers * 0.30;
+  const leadGenOvers = cappedOvers * 0.50;
+  const installerOvers = cappedOvers * 0.20;
+
+  const totalConsultantPayout = baseCommission + consultantOvers;
+  const totalLeadGenPayout = marketingFee + leadGenOvers;
+
+  // 7. Installer Real-World Cash Flow Math
+  const installerGrossCashIn = cashReceivedFromFinance + totalRebates;
+  const installerNetRevenue = installerGrossCashIn - totalConsultantPayout - totalLeadGenPayout;
+
+  // Hardware/Labor Estimator Logic (Now perfectly aligns with the Cost-Plus formula)
+  const estInstallerProfit = Math.max(0, installerNetRevenue - estHardwareCost - estLaborCost - totalExtrasCost);
+
+  // Handlers
+  const handleVendorChange = (vendor: string) => {
+    setFinanceVendor(vendor);
+    if (vendor === "Cash") {
+      setLoanType("");
+      setLoanTerm(0);
+    } else if (vendor === "CommBank") {
+      setLoanType("3.99% Home Energy Loan");
+      setLoanTerm(60);
+    } else if (vendor === "NAB_Westpac") {
+      setLoanType("Green Mortgage Top-Up");
+      setLoanTerm(60);
+    } else if (vendor === "Broker") {
+      setLoanType("Unsecured Personal Loan");
+      setLoanTerm(84);
+    } else {
+      setLoanType("0% Interest");
+      setLoanTerm(36);
+    }
   };
 
-  const [tenderPublishSuccess, setTenderPublishSuccess] = useState(false);
-  const [showFinalizationModal, setShowFinalizationModal] = useState(false);
-  const [customerPII, setCustomerPII] = useState({
-    name: "Verified WA Homeowner",
-    phone: "0400 000 000",
-    email: "homeowner@sunnystate.com.au",
-    address: "Perth Metropolitan Area, WA"
-  });
-  const [isPublishingTender, setIsPublishingTender] = useState(false);
+  const handleLoanTypeChange = (type: string) => {
+    setLoanType(type);
+    if (type === "0% Interest") setLoanTerm(36);
+    else setLoanTerm(60);
+  };
 
-  const handlePublishToTender = async () => {
-    setIsPublishingTender(true);
-    try {
-      const res = await fetch("/api/tender", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Idempotency-Key": `publish-${crypto.randomUUID()}`
-        },
-        body: JSON.stringify({
-          suburb: "Perth Metro, WA",
-          pvSize,
-          hardwareTier,
-          batterySize,
-          installerNetRevenue,
-          estHardwareCost,
-          estLaborCost,
-          activeExtras,
-          roof: isTerracotta ? "Terracotta / Steep" : isDoubleStory ? "Colorbond / Double Story" : "Colorbond / Single Story",
-          customerName: customerPII.name,
-          customerPhone: customerPII.phone,
-          customerEmail: customerPII.email,
-          customerAddress: customerPII.address,
-          leadGenCut: totalLeadGenPayout,
-          consultantCut: totalConsultantPayout
-        }),
-      });
-      if (res.ok) {
-        setTenderPublishSuccess(true);
-        setTimeout(() => setTenderPublishSuccess(false), 6000);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsPublishingTender(false);
+  // Sync initial sell price & dynamically shift it when floor changes
+  const prevFloorRef = useRef(netFloorPrice);
+  
+  useEffect(() => {
+    // If the floor price changes (e.g. changing tiers or adding extras), shift the sell price by the same amount
+    // to perfectly preserve the consultant's margin/overs.
+    const delta = netFloorPrice - prevFloorRef.current;
+    if (Math.abs(delta) > 0.1 && prevFloorRef.current > 0) {
+      setSellPrice(prev => prev + delta);
+    } else if (sellPrice < Math.floor(netFloorPrice) && netFloorPrice > 0) {
+      setSellPrice(Math.ceil(netFloorPrice));
     }
+    prevFloorRef.current = netFloorPrice;
+  }, [netFloorPrice, sellPrice]);
+
+  const quoteData: QuoteData = {
+    pvSize, batterySize, hardwareTier, activeTierName, totalExtrasCost, activeExtras,
+    totalRebates, pvCertificates, pvStcDiscount, 
+    batteryCertificates, batteryStcDiscount, // Added Battery STCs
+    waRetailer, stateBatteryRebate,
+    financeVendor, vendorFeePct, actualVendorFeeAmount, sellPrice,
+    estHardwareCost, estLaborCost, totalConsultantPayout, totalLeadGenPayout,
+    installerNetRevenue, estInstallerProfit
   };
 
   const exportPDF = async (elementId: string, filename: string) => {
@@ -109,19 +298,6 @@ export default function PricingCalculator() {
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-
-      // If exporting the customer quote, automatically append the Terms & Conditions as Page 2
-      if (elementId === "customer-quote-pdf") {
-        const termsElement = document.getElementById("customer-terms-pdf");
-        if (termsElement) {
-          const termsCanvas = await html2canvas(termsElement, { scale: 2 });
-          const termsImgData = termsCanvas.toDataURL("image/png");
-          const termsPdfHeight = (termsCanvas.height * pdfWidth) / termsCanvas.width;
-          pdf.addPage();
-          pdf.addImage(termsImgData, "PNG", 0, 0, pdfWidth, termsPdfHeight);
-        }
-      }
-      
       pdf.save(filename);
     } catch (err) {
       console.error("Failed to generate PDF", err);
@@ -165,38 +341,12 @@ export default function PricingCalculator() {
                 <select 
                   value={hardwareTier} 
                   onChange={(e) => setHardwareTier(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-500 text-sm outline-none bg-slate-50 font-semibold mb-3"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-500 text-sm outline-none bg-slate-50 font-semibold"
                 >
                   <option value={1}>Tier 1: Value (Jinko/GoodWe/SolaX/AlphaESS)</option>
                   <option value={2}>Tier 2: Advanced (QCells/Sungrow/Huawei/Fronius)</option>
                   <option value={3}>Tier 3: Premium (Maxeon/Enphase/Tesla/SigenStor)</option>
                 </select>
-
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700">
-                    <input 
-                      type="checkbox" 
-                      checked={brandSpecific} 
-                      onChange={(e) => setBrandSpecific(e.target.checked)} 
-                      className="w-4 h-4 text-primary-600 rounded" 
-                    />
-                    Specific Brand Guarantee (+${hardwareTier === 3 ? 1000 : hardwareTier === 2 ? 650 : 400})
-                  </label>
-                  {brandSpecific && (
-                    <div className="mt-3 pl-6">
-                      <input 
-                        type="text" 
-                        placeholder="e.g., Fronius Inverter & Jinko Panels" 
-                        value={requestedBrand} 
-                        onChange={(e) => setRequestedBrand(e.target.value)} 
-                        className="w-full px-3 py-2 border border-slate-200 rounded-md text-sm outline-none focus:border-primary-500" 
-                      />
-                      <p className="text-[11px] text-slate-500 mt-1 leading-snug">
-                        Guaranteeing specific stock limits the installer's ability to use their standard volume procurement pipeline, incurring a procurement premium.
-                      </p>
-                    </div>
-                  )}
-                </div>
               </div>
 
               <div className="pt-2">
@@ -230,7 +380,7 @@ export default function PricingCalculator() {
                     <span className="text-primary-600 ml-1">kWh</span>
                   </div>
                 </label>
-                <input type="range" min="0" max="45" step="0.5" value={batterySize} onChange={(e) => setBatterySize(parseFloat(e.target.value))} className="w-full accent-primary-600" />
+                <input type="range" min="0" max="30" step="0.5" value={batterySize} onChange={(e) => setBatterySize(parseFloat(e.target.value))} className="w-full accent-primary-600" />
               </div>
 
               <style jsx>{`
@@ -389,52 +539,6 @@ export default function PricingCalculator() {
                     <input type="checkbox" checked={isTiltFrames} onChange={(e) => setIsTiltFrames(e.target.checked)} className="w-4 h-4 text-primary-600 rounded" />
                     Tilt Frames (+$60/kW)
                   </label>
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <label className="block text-xs font-semibold text-slate-500 mb-2">Add Custom Extra</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      placeholder="Extra Name" 
-                      value={newExtraName} 
-                      onChange={(e) => setNewExtraName(e.target.value)} 
-                      className="flex-1 px-3 py-2 border border-slate-200 rounded-md text-sm outline-none focus:border-primary-500" 
-                    />
-                    <div className="relative w-24">
-                      <span className="absolute left-3 top-2 text-slate-400 text-sm">$</span>
-                      <input 
-                        type="number" 
-                        placeholder="Cost" 
-                        value={newExtraCost} 
-                        onChange={(e) => setNewExtraCost(e.target.value)} 
-                        className="w-full pl-6 pr-2 py-2 border border-slate-200 rounded-md text-sm outline-none focus:border-primary-500 hide-arrows" 
-                      />
-                    </div>
-                    <button 
-                      onClick={handleAddCustomExtra}
-                      disabled={!newExtraName.trim() || !newExtraCost || Number(newExtraCost) <= 0}
-                      className="bg-primary-600 text-white px-3 py-2 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-                    >
-                      <PlusCircle className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  {customExtrasList.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      {customExtrasList.map(extra => (
-                        <div key={extra.id} className="flex justify-between items-center bg-slate-50 px-3 py-2 rounded-md border border-slate-100 text-sm">
-                          <span className="text-slate-700">{extra.name}</span>
-                          <div className="flex items-center gap-3">
-                            <span className="font-semibold text-slate-900">+${extra.cost}</span>
-                            <button onClick={() => handleRemoveCustomExtra(extra.id)} className="text-red-400 hover:text-red-600">
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -637,41 +741,18 @@ export default function PricingCalculator() {
               </div>
 
               {/* ACTION BUTTONS */}
-              <div className="mt-6 flex flex-col gap-3">
-                <div className="flex gap-3">
-                  <button 
-                    onClick={() => exportPDF("customer-quote-pdf", `Sunny_State_Quote_${sellPrice}.pdf`)}
-                    className="flex-1 bg-white hover:bg-slate-50 text-primary-900 border border-primary-200 font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 text-sm"
-                  >
-                    <Download className="w-4 h-4" /> Export Quote PDF
-                  </button>
-                  <button 
-                    onClick={() => setShowEmailModal(true)}
-                    className="flex-1 bg-accent-500 hover:bg-accent-600 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm shadow-accent-500/30 flex items-center justify-center gap-2 text-sm"
-                  >
-                    <Mail className="w-4 h-4" /> Email Quote
-                  </button>
-                </div>
-
-                <button
-                  disabled={isPublishingTender}
-                  onClick={() => setShowFinalizationModal(true)}
-                  className={`w-full py-3 px-4 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-sm ${
-                    tenderPublishSuccess
-                      ? "bg-emerald-600 text-white"
-                      : "bg-slate-900 hover:bg-slate-850 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                  }`}
+              <div className="mt-6 flex gap-3">
+                <button 
+                  onClick={() => exportPDF("customer-quote-pdf", `Sunny_State_Quote_${sellPrice}.pdf`)}
+                  className="flex-1 bg-white hover:bg-slate-50 text-primary-900 border border-primary-200 font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
                 >
-                  {tenderPublishSuccess ? (
-                    <>
-                      <Check className="w-4 h-4 text-white" /> Broadcasted to SunnyEX Tender Order Book!
-                    </>
-                  ) : (
-                    <>
-                      <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-                      {isPublishingTender ? "Broadcasting to Marketplace..." : "Publish to SunnyEX Tender Order Book"}
-                    </>
-                  )}
+                  <Download className="w-5 h-5" /> Export PDF
+                </button>
+                <button 
+                  onClick={() => setShowEmailModal(true)}
+                  className="flex-1 bg-accent-500 hover:bg-accent-600 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm shadow-accent-500/30 flex items-center justify-center gap-2"
+                >
+                  <Mail className="w-5 h-5" /> Email Quote
                 </button>
               </div>
             </div>
@@ -743,12 +824,12 @@ export default function PricingCalculator() {
                   
                   {/* Back-end Invoicing Logic */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-blue-900 font-bold text-[13px] mb-1">
-                      <span>Total Brokerage Invoice (Installer Owes Us)</span>
-                      <span>${(totalLeadGenPayout + totalConsultantPayout + 150).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    <div className="flex justify-between items-center text-blue-900 font-bold text-lg mb-1">
+                      <span>Invoice to Send to Installer</span>
+                      <span>${totalLeadGenPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
-                    <div className="text-[10px] text-blue-600 font-bold uppercase tracking-wide">
-                      INCLUDES: LEAD GEN (${totalLeadGenPayout.toLocaleString()}) + CONSULTANT (${totalConsultantPayout.toLocaleString()}) + WARRANTY ESCROW ($150)
+                    <div className="text-xs text-blue-600 font-bold uppercase tracking-wide">
+                      ${marketingFee.toLocaleString()} BASE + ${leadGenOvers.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} OVERS
                     </div>
                   </div>
 
@@ -785,22 +866,12 @@ export default function PricingCalculator() {
                   *Tender Conditions: The installer net revenue absorbs standard Customer Acquisition Costs (CAC), meaning the savings in marketing overhead translate directly to net profit for the installing company. All site extras and billables must be inclusive of this final quote so the customer cannot incur extras based on predatory behaviour. If unforeseen but proven extras occur on-site, a 3-way negotiation will be entered between the consultant, the marketing entity, and the installer to balance out the overhead and preserve profitability for all parties. If the required extras are so severe that they completely destroy margins and a compromise cannot be reached, only then must the customer bear the cost for a solution.
                 </div>
                 
-                <div className="flex flex-col gap-2 mt-6">
-                  <button 
-                    onClick={() => exportPDF("installer-job-sheet-pdf", `Installer_Tender_${installerNetRevenue}.pdf`)}
-                    className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-5 h-5" /> Export Work Order PDF
-                  </button>
-                  <button
-                    disabled={isPublishingTender}
-                    onClick={() => setShowFinalizationModal(true)}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 text-sm"
-                  >
-                    <Activity className="w-4 h-4" />
-                    {tenderPublishSuccess ? "Broadcasted Live to SunnyEX!" : "Publish to SunnyEX Live Order Book"}
-                  </button>
-                </div>
+                <button 
+                  onClick={() => exportPDF("installer-job-sheet-pdf", `Installer_Tender_${installerNetRevenue}.pdf`)}
+                  className="w-full mt-6 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
+                >
+                  <Download className="w-5 h-5" /> Export Work Order PDF
+                </button>
               </div>
             )}
             
@@ -812,7 +883,6 @@ export default function PricingCalculator() {
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
         <CustomerQuoteTemplate data={quoteData} />
         <InstallerWorkOrderTemplate data={quoteData} />
-        <CustomerTermsTemplate />
       </div>
 
       {/* Email Quote Modal */}
@@ -870,41 +940,7 @@ export default function PricingCalculator() {
           </div>
         </div>
       )}
-      {/* FINALIZATION MODAL */}
-      {showFinalizationModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-700">
-            <div className="bg-slate-900 p-5 text-white border-b border-slate-700">
-              <h3 className="font-bold text-xl flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-blue-400" /> Secure Customer PII Intake
-              </h3>
-              <p className="text-slate-400 text-xs mt-1">This data will be redacted on the SunnyEX public board and only revealed to the specific installer who claims the contract under the MSA.</p>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Customer Full Name</label>
-                <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-800" value={customerPII.name} onChange={(e) => setCustomerPII({...customerPII, name: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Customer Phone Number</label>
-                <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-800" value={customerPII.phone} onChange={(e) => setCustomerPII({...customerPII, phone: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Customer Email</label>
-                <input type="email" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-800" value={customerPII.email} onChange={(e) => setCustomerPII({...customerPII, email: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Exact Street Address</label>
-                <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-800" value={customerPII.address} onChange={(e) => setCustomerPII({...customerPII, address: e.target.value})} />
-              </div>
-            </div>
-            <div className="p-4 bg-slate-50 flex gap-3 justify-end border-t border-slate-200">
-              <button onClick={() => setShowFinalizationModal(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800">Cancel</button>
-              <button onClick={() => { setShowFinalizationModal(false); handlePublishToTender(); }} disabled={isPublishingTender} className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded shadow hover:bg-blue-700">Confirm & Publish to SunnyEX</button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

@@ -1,0 +1,58 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model TenderJob {
+  id            String      @id
+  suburb        String
+  size          Float
+  tier          Int
+  tierName      String
+  battery       Float
+  roof          String
+  extras        String      // JSON stringified array for sqlite
+  payout        Float
+  hardwareCost  Float
+  laborCost     Float
+  warrantyFund  Float
+  leadGenCut    Float       @default(0)
+  consultantCut Float       @default(0)
+  timeRemaining String
+  isHot         Boolean
+  status        String
+  claimedBy     String?
+  claimedAt     String?
+  
+  customer      Customer?
+  variations    Variation[]
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Customer {
+  id          String    @id @default(uuid())
+  name        String
+  phone       String
+  email       String
+  address     String
+  
+  jobId       String    @unique
+  job         TenderJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model Variation {
+  id          String    @id
+  reason      String
+  amount      Float
+  status      String
+  createdAt   String
+  
+  jobId       String
+  job         TenderJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}

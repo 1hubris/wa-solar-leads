@@ -30,6 +30,7 @@ export default function Funnel() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+  const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Address input logic
   const updateData = (fields: Partial<LeadData>) => {
@@ -45,6 +46,9 @@ export default function Funnel() {
 
   const submitLead = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSubmitting) return; // Prevent duplicate submissions
+    
     setError("");
     setIsSubmitting(true);
     
@@ -55,13 +59,23 @@ export default function Funnel() {
         body: JSON.stringify(data),
       });
       
-      if (!res.ok) throw new Error("Failed to submit");
+      const resData = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(resData.error || "Failed to submit assessment.");
+      }
       setIsSuccess(true);
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please check your details and try again.");
+      
+      // Implement a slight backoff if there's an error before they can smash submit again
+      submitTimeoutRef.current = setTimeout(() => {
+        setIsSubmitting(false);
+      }, 2000);
+      return;
+    } 
+    
+    setIsSubmitting(false);
   };
 
   const calculate5YearLoss = (bimonthlyBill: number) => {
@@ -226,6 +240,7 @@ export default function Funnel() {
                       onChange={handleAddressChange}
                       placeholder="e.g. 123 Smith Street, Perth WA 6000"
                       autoComplete="street-address"
+                      maxLength={250}
                       className="w-full px-4 py-3 pr-10 rounded-xl border-2 border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 outline-none transition-all text-lg"
                     />
                   </div>
@@ -252,23 +267,24 @@ export default function Funnel() {
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                  <input required type="text" value={data.name} onChange={(e) => updateData({ name: e.target.value })} className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none transition-all" placeholder="John Doe" />
+                  <input required maxLength={100} type="text" value={data.name} onChange={(e) => updateData({ name: e.target.value })} className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none transition-all" placeholder="John Doe" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
-                  <input required type="tel" value={data.mobile} onChange={(e) => updateData({ mobile: e.target.value })} className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none transition-all" placeholder="0400 000 000" />
+                  <input required maxLength={20} pattern="^[0-9+\s()-]+$" title="Valid phone number format only" type="tel" value={data.mobile} onChange={(e) => updateData({ mobile: e.target.value })} className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none transition-all" placeholder="0400 000 000" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                  <input required type="email" value={data.email} onChange={(e) => updateData({ email: e.target.value })} className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none transition-all" placeholder="john@example.com" />
+                  <input required maxLength={150} type="email" value={data.email} onChange={(e) => updateData({ email: e.target.value })} className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none transition-all" placeholder="john@example.com" />
                 </div>
               </div>
 
               <div className="flex items-start gap-3 mb-8 bg-green-50/50 p-4 rounded-xl border border-green-200">
-                <Lock className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-slate-700 leading-relaxed">
-                  <strong>Strict Privacy Guarantee:</strong> Your data is secured with bank-level encryption and will strictly <em>only</em> be used for the purpose of finding the best product and company for your specific area in WA.
-                </p>
+                <Lock className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+                <div className="text-xs text-slate-700 leading-relaxed space-y-1">
+                  <p><strong>Strict Privacy Guarantee:</strong> By submitting, you confirm these are your own details. Your data is secured with bank-level encryption.</p>
+                  <p>By law, your information <strong>will never be sold</strong> to third parties, and you will <strong>not</strong> be subjected to spam, junk mail, or endless cold calls. We only use this to provide your specific WA wholesale assessment.</p>
+                </div>
               </div>
 
               {error && <p className="text-red-600 text-sm mb-4 text-center">{error}</p>}
