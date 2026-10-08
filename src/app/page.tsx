@@ -98,6 +98,10 @@ export default function Home() {
                   <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
                   <span className="font-semibold">Strict vetting of qualified electrical companies</span>
                 </div>
+                <div className="flex items-center gap-3 text-slate-200">
+                  <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                  <span className="font-semibold">Guaranteed insurance backed by our Community Escrow Trust</span>
+                </div>
               </div>
             </div>
 
