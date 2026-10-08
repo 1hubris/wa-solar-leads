@@ -7,7 +7,7 @@ export default function Home() {
       
       {/* Heavy Navy Header (SolarQuotes Utility Style) */}
       <header className="w-full bg-primary-700 text-white border-b-4 border-accent-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <div className="flex items-center gap-3">
@@ -40,12 +40,12 @@ export default function Home() {
       </header>
 
       {/* Split Hero Section */}
-      <section className="bg-primary-600 relative overflow-hidden py-12 md:py-20 border-b border-primary-900 shadow-xl">
+      <section className="bg-primary-600 relative overflow-hidden py-16 md:py-32 border-b border-primary-900 shadow-xl">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=')]"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-32">
             
             {/* Left Column: Copywriting */}
             <div className="flex-1 text-center lg:text-left">
@@ -62,7 +62,7 @@ export default function Home() {
                 <span className="text-accent-500 underline decoration-accent-500/30 underline-offset-8">and overpay.</span>
               </h1>
               
-              <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-6 font-medium">
+              <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto lg:mx-0 mb-6 font-medium">
                 Be sure to get the fairest price with the strongest products and warranties. We connect you with experienced design consultants who build a system designed for your personal consumption—removing overheads so massive savings are passed directly to you. All installations are backed by our Community Escrow Trust, guaranteeing your insurance and warranty for the long term.
               </p>
 
@@ -126,7 +126,7 @@ export default function Home() {
 
       {/* Finance Bypass Banner */}
       <section className="bg-white border-b border-slate-200 py-10 px-4">
-        <div className="max-w-7xl mx-auto text-center">
+        <div className="max-w-[1400px] mx-auto text-center">
           <p className="text-slate-800 font-extrabold text-xl md:text-2xl mb-2">
             Partner with your home loan provider to dodge finance fees and save thousands.
           </p>
@@ -168,7 +168,7 @@ export default function Home() {
 
       {/* Hardware Tiers Matrix */}
       <section className="bg-white border-b border-slate-200 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Utilizing premium tier-1 equipment and brands</h2>
             <h3 className="text-2xl md:text-3xl font-extrabold text-slate-800">Choose your performance tier</h3>
@@ -265,7 +265,7 @@ export default function Home() {
 
       {/* "How It Works" / Value Proposition Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#f4f7f6]">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-primary-700 mb-4">
               A smarter way to buy solar in WA.
@@ -310,8 +310,8 @@ export default function Home() {
 
       {/* Payment Options */}
       <section className="bg-white py-12 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xs font-bold text-slate-500 mb-8 max-w-2xl mx-auto">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-xs font-bold text-slate-500 mb-8 max-w-3xl mx-auto">
             0% Vendor Markups. 100% Transparency. <span className="text-primary-600">Pay out your system early with zero penalties.</span>
           </p>
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 mb-12">
@@ -361,7 +361,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-primary-900 text-slate-400 py-12 px-4 sm:px-6 lg:px-8 border-t border-primary-800">
-        <div className="max-w-7xl mx-auto text-center text-sm">
+        <div className="max-w-[1400px] mx-auto text-center text-sm">
           <div className="flex items-center justify-center gap-2 mb-6 text-slate-500">
             <Lock className="w-4 h-4" />
             <span>Your data is secured with 256-bit encryption</span>
