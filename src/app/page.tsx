@@ -63,7 +63,7 @@ export default function Home() {
               </h1>
               
               <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-6 font-medium">
-                Be sure to get the fairest price with the strongest products and warranties. We connect you with experienced design consultants who build a system designed for your personal consumption—removing overheads so massive savings are passed directly to you.
+                Be sure to get the fairest price with the strongest products and warranties. We connect you with experienced design consultants who build a system designed for your personal consumption—removing overheads so massive savings are passed directly to you. All installations are backed by our Community Escrow Trust, guaranteeing your insurance and warranty for the long term.
               </p>
 
               {/* Installer Trust Badge */}
