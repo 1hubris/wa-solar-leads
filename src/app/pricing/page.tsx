@@ -731,11 +731,15 @@ export default function PricingCalculator() {
                     <span className="text-red-500">-${totalConsultantPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                   </div>
 
-                  <div className="flex justify-between text-slate-600 border-b border-slate-300 pb-2">
+                  <div className="flex justify-between text-slate-600 pt-1">
                     <span>- Lead Gen Invoice (You)</span>
                     <span className="text-red-500">-${totalLeadGenPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                   </div>
                   
+                  <div className="flex justify-between text-slate-600 pt-1 border-b border-slate-300 pb-2">
+                    <span>- Warranty Escrow Trust</span>
+                    <span className="text-red-500">-$150.00</span>
+                  </div>
                   <div className="flex justify-between text-base font-bold text-slate-800 mb-4 pt-1">
                     <span>Net Installer Revenue</span>
                     <span>${installerNetRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
