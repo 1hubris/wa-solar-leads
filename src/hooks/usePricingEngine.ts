@@ -43,7 +43,7 @@ export function usePricingEngine() {
   const [isTerracotta, setIsTerracotta] = useState<boolean>(false);
   const [isSbUpgrade1Ph, setIsSbUpgrade1Ph] = useState<boolean>(false);
   const [isSbUpgrade3Ph, setIsSbUpgrade3Ph] = useState<boolean>(false);
-  const [isSmartMeter, setIsSmartMeter] = useState<boolean>(false);
+  const [isSystemRemoval, setIsSystemRemoval] = useState<boolean>(false);
   const [isTiltFrames, setIsTiltFrames] = useState<boolean>(false);
   const [customExtrasList, setCustomExtrasList] = useState<{id: string, name: string, cost: number}[]>([]);
 
@@ -99,7 +99,7 @@ export function usePricingEngine() {
   if (isTerracotta) { totalExtrasCost += 300; activeExtras.push("Terracotta/Steep"); }
   if (isSbUpgrade1Ph) { totalExtrasCost += 900; activeExtras.push("Switchboard (1-Phase)"); }
   if (isSbUpgrade3Ph) { totalExtrasCost += 1200; activeExtras.push("Switchboard (3-Phase)"); }
-  if (isSmartMeter) { totalExtrasCost += 350; activeExtras.push("Smart Meter"); }
+  if (isSystemRemoval) { totalExtrasCost += 600; activeExtras.push("System removal"); }
   if (isTiltFrames) { 
     const tiltCost = Math.floor(pvSize * 60);
     totalExtrasCost += tiltCost; 
@@ -314,7 +314,7 @@ export function usePricingEngine() {
     financeVendor, setFinanceVendor, loanType, setLoanType, loanTerm, setLoanTerm,
     isDoubleStory, setIsDoubleStory, isTerracotta, setIsTerracotta,
     isSbUpgrade1Ph, setIsSbUpgrade1Ph, isSbUpgrade3Ph, setIsSbUpgrade3Ph,
-    isSmartMeter, setIsSmartMeter, isTiltFrames, setIsTiltFrames,
+    isSystemRemoval, setIsSystemRemoval, isTiltFrames, setIsTiltFrames,
     customExtrasList, setCustomExtrasList, brandSpecific, setBrandSpecific,
     requestedBrand, setRequestedBrand,
     sellPrice, setSellPrice, showEmailModal, setShowEmailModal,

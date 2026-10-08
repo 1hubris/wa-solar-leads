@@ -16,7 +16,7 @@ export default function PricingCalculator() {
     financeVendor, setFinanceVendor, loanType, setLoanType, loanTerm, setLoanTerm,
     isDoubleStory, setIsDoubleStory, isTerracotta, setIsTerracotta,
     isSbUpgrade1Ph, setIsSbUpgrade1Ph, isSbUpgrade3Ph, setIsSbUpgrade3Ph,
-    isSmartMeter, setIsSmartMeter, isTiltFrames, setIsTiltFrames,
+    isSystemRemoval, setIsSystemRemoval, isTiltFrames, setIsTiltFrames,
     customExtrasList, setCustomExtrasList, brandSpecific, setBrandSpecific,
     requestedBrand, setRequestedBrand,
     sellPrice, setSellPrice, showEmailModal, setShowEmailModal,
@@ -382,8 +382,8 @@ export default function PricingCalculator() {
                     3-Ph Switchboard (+$1200)
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={isSmartMeter} onChange={(e) => setIsSmartMeter(e.target.checked)} className="w-4 h-4 text-primary-600 rounded" />
-                    Smart Meter (+$350)
+                    <input type="checkbox" checked={isSystemRemoval} onChange={(e) => setIsSystemRemoval(e.target.checked)} className="w-4 h-4 text-primary-600 rounded" />
+                    System removal (+$600)
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={isTiltFrames} onChange={(e) => setIsTiltFrames(e.target.checked)} className="w-4 h-4 text-primary-600 rounded" />
