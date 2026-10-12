@@ -16,13 +16,16 @@ function escapeHtml(unsafe: string) {
 }
 
 const LeadSchema = z.object({
-  homeowner: z.boolean(),
-  existingSystem: z.string().min(1).max(100),
-  billSize: z.number().min(0).max(10000),
-  address: z.string().min(5).max(255),
+  homeowner: z.boolean().optional().default(true),
+  existingSystem: z.string().optional().default("None"),
+  billSize: z.number().min(0).max(10000).optional().default(400),
+  address: z.string().min(3).max(255),
   name: z.string().min(2).max(100),
   mobile: z.string().min(8).max(20).regex(/^[0-9+\s()-]+$/, "Invalid phone format"),
   email: z.string().email().max(150),
+  roofType: z.string().optional().default("Not specified"),
+  phasing: z.string().optional().default("Not specified"),
+  notes: z.string().optional().default("Web Assessment Form"),
 });
 
 export async function POST(request: Request) {
@@ -40,14 +43,17 @@ export async function POST(request: Request) {
       
       // If file doesn't exist, write the header row first
       if (!fileExists) {
-        await fs.writeFile(csvFilePath, "Date,Name,Mobile,Email,Address,Homeowner,Bill Size\n", "utf8");
+        await fs.writeFile(csvFilePath, "Date,Name,Mobile,Email,Address,Homeowner,Bill Size,Roof Type,Electrical Phase,Notes\n", "utf8");
       }
 
       // Append the new lead (sanitizing commas for CSV format)
       const dateStr = new Date().toLocaleString("en-AU", { timeZone: "Australia/Perth" });
       const safeName = validatedData.name.replace(/"/g, '""');
       const safeAddress = validatedData.address.replace(/"/g, '""');
-      const csvRow = `"${dateStr}","${safeName}","${validatedData.mobile}","${validatedData.email}","${safeAddress}","${validatedData.homeowner ? 'Yes' : 'No'}","$${validatedData.billSize}"\n`;
+      const safeRoof = validatedData.roofType.replace(/"/g, '""');
+      const safePhase = validatedData.phasing.replace(/"/g, '""');
+      const safeNotes = validatedData.notes.replace(/"/g, '""');
+      const csvRow = `"${dateStr}","${safeName}","${validatedData.mobile}","${validatedData.email}","${safeAddress}","${validatedData.homeowner ? 'Yes' : 'No'}","$${validatedData.billSize}","${safeRoof}","${safePhase}","${safeNotes}"\n`;
       
       await fs.appendFile(csvFilePath, csvRow, "utf8");
       console.log("Successfully saved lead to local leads.csv spreadsheet.");
@@ -57,7 +63,7 @@ export async function POST(request: Request) {
 
     // 2. Google Sheets Webhook Delivery
     try {
-      const googleScriptUrl = "https://script.google.com/macros/s/AKfycbwlDmkALUvKBb1r1VrDRKpCYngAt2QGUBf7cxzSdNbamn7h7i9lRCpXNw9OcGMkNbu2PA/exec";
+      const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzgqk0EatPP935z68kOkm6PSeJbEdC5YDlo1puNslqkd7sgLROK-DRwpyYOv_9IhbNvRg/exec";
       
       const sheetResponse = await fetch(googleScriptUrl, {
         method: "POST",
@@ -65,8 +71,14 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...validatedData,
-          mobile: "'" + validatedData.mobile
+          name: validatedData.name,
+          mobile: "'" + validatedData.mobile,
+          email: validatedData.email,
+          address: validatedData.address,
+          billSize: validatedData.billSize,
+          roofType: validatedData.roofType,
+          phasing: validatedData.phasing,
+          notes: (validatedData.notes ? validatedData.notes + " | " : "") + `[Homeowner: ${validatedData.homeowner ? 'Yes' : 'No'}, System: ${validatedData.existingSystem}]`
         }),
       });
       

@@ -3,28 +3,33 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ShieldCheck, ArrowRight, Home, Battery, Zap, MapPin, User, ChevronLeft, Loader2, Lock } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 type LeadData = {
   homeowner: boolean | null;
   existingSystem: string;
   billSize: number;
+  roofType: string;
+  phasing: string;
   address: string;
   name: string;
   mobile: string;
   email: string;
+  notes?: string;
 };
 
 export default function Funnel() {
   const [step, setStep] = useState(1);
   const [data, setData] = useState<LeadData>({
-    homeowner: null,
-    existingSystem: "",
+    homeowner: true,
+    existingSystem: "None",
     billSize: 400,
+    roofType: "Tile",
+    phasing: "Single Phase",
     address: "",
     name: "",
     mobile: "",
     email: "",
+    notes: "",
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,7 +37,6 @@ export default function Funnel() {
   const [error, setError] = useState("");
   const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Address input logic
   const updateData = (fields: Partial<LeadData>) => {
     setData((prev) => ({ ...prev, ...fields }));
   };
@@ -46,8 +50,7 @@ export default function Funnel() {
 
   const submitLead = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isSubmitting) return; // Prevent duplicate submissions
+    if (isSubmitting) return;
     
     setError("");
     setIsSubmitting(true);
@@ -67,8 +70,6 @@ export default function Funnel() {
       setIsSuccess(true);
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please check your details and try again.");
-      
-      // Implement a slight backoff if there's an error before they can smash submit again
       submitTimeoutRef.current = setTimeout(() => {
         setIsSubmitting(false);
       }, 2000);
@@ -76,14 +77,6 @@ export default function Funnel() {
     } 
     
     setIsSubmitting(false);
-  };
-
-  const calculate5YearLoss = (bimonthlyBill: number) => {
-    const yearlyBill = bimonthlyBill * 6;
-    const r = 1.03; // 3% inflation per year
-    // Geometric series sum: a * (r^n - 1) / (r - 1)
-    const total = yearlyBill * (Math.pow(r, 5) - 1) / (r - 1);
-    return Math.round(total);
   };
 
   const slideVariants = {
@@ -94,33 +87,49 @@ export default function Funnel() {
 
   if (isSuccess) {
     return (
-      <div className="text-center py-12 px-6 solid-card">
-        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Check className="w-8 h-8" />
+      <div className="text-left py-8 px-6 sm:px-8 bg-white border border-[#ddd7ca] rounded-2xl shadow-xl">
+        <div className="w-12 h-12 bg-[#1f6e58] text-white rounded-full flex items-center justify-center mb-5 text-xl font-bold shadow-md shadow-[#1f6e58]/20">
+          <Check className="w-6 h-6 stroke-[3]" />
         </div>
-        <h2 className="text-3xl font-bold text-slate-900 mb-4">Request Received!</h2>
-        <p className="text-slate-600 text-lg mb-8">
-          Thank you, {data.name}. Our WA solar assessment team will contact you shortly on {data.mobile}.
+        <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#102022] mb-3 leading-tight">
+          Thank you for your submission.
+        </h2>
+        <p className="text-[#667376] text-base leading-relaxed mb-6 font-medium">
+          A specialised design consultant will assist you in becoming a part of the Sunny State community.
         </p>
+        <div className="bg-[#fbfaf7] border-l-4 border-[#df6f24] border-y border-r border-[#ddd7ca] rounded-xl p-4 sm:p-5 mb-6">
+          <span className="text-xs uppercase tracking-wider font-extrabold text-[#df6f24] block mb-1">
+            Project Intake Confirmed
+          </span>
+          <p className="text-xs text-[#667376] leading-relaxed">
+            Your property and energy profile have been recorded. Our team will review your roof orientation, shading, and tariff structure to build your transparent project tender.
+          </p>
+        </div>
+        <button
+          onClick={() => { setIsSuccess(false); setStep(1); }}
+          className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#102022] hover:bg-[#172022] text-white font-bold text-sm transition-all shadow-md"
+        >
+          Submit Another Assessment
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="solid-card w-full mx-auto overflow-hidden relative">
+    <div className="bg-white border border-[#ddd7ca] rounded-2xl shadow-xl w-full mx-auto overflow-hidden relative">
       {/* Progress Bar */}
-      <div className="bg-slate-100 h-2 w-full">
+      <div className="bg-[#efe8da] h-2 w-full">
         <div 
-          className="bg-primary-600 h-full transition-all duration-500 ease-out"
+          className="bg-[#df6f24] h-full transition-all duration-500 ease-out"
           style={{ width: `${(step / 5) * 100}%` }}
         />
       </div>
 
-      <div className="p-6 md:p-10 min-h-[420px] flex flex-col">
+      <div className="p-6 md:p-8 min-h-[420px] flex flex-col">
         {step > 1 && (
           <button 
             onClick={prevStep}
-            className="flex items-center text-slate-400 hover:text-slate-600 text-sm font-medium mb-6 transition-colors"
+            className="flex items-center text-[#667376] hover:text-[#102022] text-sm font-medium mb-4 transition-colors w-fit"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back
@@ -131,166 +140,229 @@ export default function Funnel() {
           {/* STEP 1: Homeownership */}
           {step === 1 && (
             <motion.div key="step1" variants={slideVariants} initial="initial" animate="animate" exit="exit" className="flex-1 flex flex-col justify-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-primary-100 text-primary-600 rounded-full mb-6 mx-auto">
+              <div className="flex items-center justify-center w-12 h-12 bg-[#f6f3ec] text-[#df6f24] rounded-full mb-4 mx-auto border border-[#ddd7ca]">
                 <Home className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 mb-2">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-center text-[#102022] mb-2">
                 Do you own your home in WA?
               </h2>
-              <p className="text-center text-slate-500 mb-8">This assessment is currently for homeowners only.</p>
+              <p className="text-center text-[#667376] text-sm mb-6">This assessment is currently for homeowners.</p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button onClick={() => { updateData({ homeowner: true }); nextStep(); }} className="py-4 px-6 rounded-xl border-2 border-slate-200 hover:border-primary-500 hover:bg-primary-50 transition-all font-semibold text-lg text-slate-700">
-                  Yes, I own it
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <button
+                  type="button"
+                  onClick={() => { updateData({ homeowner: true }); nextStep(); }}
+                  className={`p-4 rounded-xl border text-left transition-all ${
+                    data.homeowner === true
+                      ? "border-[#df6f24] bg-[#fff7f0] ring-2 ring-[#df6f24]/20"
+                      : "border-[#ddd7ca] bg-white hover:border-[#df6f24]"
+                  }`}
+                >
+                  <strong className="block text-[#102022] text-sm font-bold">Yes, I own it</strong>
+                  <span className="text-xs text-[#667376]">Continue to solar assessment</span>
                 </button>
-                <button onClick={() => { updateData({ homeowner: false }); nextStep(); }} className="py-4 px-6 rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all font-semibold text-lg text-slate-700">
-                  No, I rent
+
+                <button
+                  type="button"
+                  onClick={() => { updateData({ homeowner: false }); nextStep(); }}
+                  className={`p-4 rounded-xl border text-left transition-all ${
+                    data.homeowner === false
+                      ? "border-[#df6f24] bg-[#fff7f0] ring-2 ring-[#df6f24]/20"
+                      : "border-[#ddd7ca] bg-white hover:border-[#df6f24]"
+                  }`}
+                >
+                  <strong className="block text-[#102022] text-sm font-bold">No, I rent</strong>
+                  <span className="text-xs text-[#667376]">Explore renter pathways</span>
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 2: Existing System */}
-          {step === 2 && data.homeowner === true && (
+          {/* STEP 2: Bill & Existing System */}
+          {step === 2 && (
             <motion.div key="step2" variants={slideVariants} initial="initial" animate="animate" exit="exit" className="flex-1 flex flex-col justify-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-primary-100 text-primary-600 rounded-full mb-6 mx-auto">
-                <Battery className="w-6 h-6" />
+              <div className="flex items-center justify-center w-12 h-12 bg-[#f6f3ec] text-[#df6f24] rounded-full mb-4 mx-auto border border-[#ddd7ca]">
+                <Zap className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 mb-8">
-                Do you already have solar or a battery?
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-center text-[#102022] mb-2">
+                What is your bi-monthly power bill?
               </h2>
-              <div className="grid gap-3">
-                {["None", "Solar Only", "Solar & Battery"].map((opt) => (
-                  <button key={opt} onClick={() => { updateData({ existingSystem: opt }); nextStep(); }} className={cn("py-4 px-6 rounded-xl border-2 text-left font-medium text-lg transition-all", data.existingSystem === opt ? "border-primary-600 bg-primary-50 text-primary-900" : "border-slate-200 hover:border-primary-300 text-slate-700 hover:bg-slate-50")}>
-                    {opt}
+              <p className="text-center text-[#667376] text-sm mb-6">Select your typical Synergy or Horizon power bill.</p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+                {[
+                  { label: "Under $250", value: 200 },
+                  { label: "$250–$400", value: 350 },
+                  { label: "$400–$600", value: 500 },
+                  { label: "$600+", value: 750 },
+                ].map((tier) => (
+                  <button
+                    key={tier.label}
+                    type="button"
+                    onClick={() => updateData({ billSize: tier.value })}
+                    className={`p-3 rounded-xl border text-center transition-all ${
+                      data.billSize === tier.value
+                        ? "border-[#df6f24] bg-[#fff7f0] text-[#df6f24] font-bold"
+                        : "border-[#ddd7ca] bg-white text-[#102022] hover:border-[#df6f24]"
+                    }`}
+                  >
+                    <span className="text-xs font-semibold block">{tier.label}</span>
                   </button>
                 ))}
               </div>
+
+              <div className="mb-6">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#102022] mb-2">Existing Solar Setup</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {["None", "Solar Only", "Solar + Battery"].map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => updateData({ existingSystem: opt })}
+                      className={`p-2.5 rounded-lg border text-center text-xs transition-all ${
+                        data.existingSystem === opt
+                          ? "border-[#df6f24] bg-[#fff7f0] text-[#df6f24] font-bold"
+                          : "border-[#ddd7ca] bg-white text-[#667376] hover:border-[#df6f24]"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={nextStep}
+                className="w-full bg-[#102022] hover:bg-[#172022] text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center text-sm shadow-md"
+              >
+                Continue <ArrowRight className="w-4 h-4 ml-2" />
+              </button>
             </motion.div>
           )}
 
-          {/* DISQUALIFY STEP (Renters) */}
-          {step === 2 && data.homeowner === false && (
-            <motion.div key="disqualify" variants={slideVariants} initial="initial" animate="animate" exit="exit" className="flex-1 flex flex-col justify-center text-center">
-              <h2 className="text-2xl font-bold text-slate-900 mb-4">Sorry, this assessment is for homeowners.</h2>
-              <p className="text-slate-600 mb-8">You may need your landlord's permission to install solar.</p>
-              <button onClick={() => setStep(1)} className="text-primary-600 font-medium hover:underline">Start Over</button>
-            </motion.div>
-          )}
-
-          {/* STEP 3: Bill Size (Slider) */}
+          {/* STEP 3: Roof Type & Electrical Phase */}
           {step === 3 && (
             <motion.div key="step3" variants={slideVariants} initial="initial" animate="animate" exit="exit" className="flex-1 flex flex-col justify-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-primary-100 text-primary-600 rounded-full mb-6 mx-auto">
-                <Zap className="w-6 h-6" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 mb-2">
-                What is your average Synergy bi-monthly bill?
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-center text-[#102022] mb-2">
+                What does your site look like?
               </h2>
-              <p className="text-center text-slate-500 mb-8">Move the slider to calculate your 5-year projected power costs.</p>
-              
-              <div className="space-y-6">
-                <div className="flex justify-between items-center text-slate-700 font-bold px-2">
-                  <span className="text-slate-400">$100</span>
-                  <span className="text-4xl text-primary-600">${data.billSize}</span>
-                  <span className="text-slate-400">$1000+</span>
-                </div>
-                
-                <input 
-                  type="range" 
-                  min="100" 
-                  max="1000" 
-                  step="50"
-                  value={data.billSize}
-                  onChange={(e) => updateData({ billSize: parseInt(e.target.value) })}
-                  className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
-                />
+              <p className="text-center text-[#667376] text-sm mb-6">Helps configure Western Power grid parameters.</p>
 
-                <div className="bg-red-50 border border-red-100 rounded-xl p-5 text-center mt-6 shadow-sm">
-                  <p className="text-xs text-red-600 font-bold mb-1 uppercase tracking-wider">Projected 5-Year Synergy Cost</p>
-                  <p className="text-5xl font-black text-red-700 my-2">
-                    ${calculate5YearLoss(data.billSize).toLocaleString()}
-                  </p>
+              <div className="mb-4">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#102022] mb-2">Roof Material</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {["Tile", "Colorbond", "Flat / Mixed", "Not sure"].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => updateData({ roofType: r })}
+                      className={`p-3 rounded-xl border text-center text-xs transition-all ${
+                        data.roofType === r
+                          ? "border-[#df6f24] bg-[#fff7f0] text-[#df6f24] font-bold"
+                          : "border-[#ddd7ca] bg-white text-[#667376] hover:border-[#df6f24]"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
                 </div>
-                
-                <button onClick={nextStep} className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center text-lg mt-4 shadow-lg shadow-primary-600/30">
-                  Continue <ArrowRight className="w-5 h-5 ml-2" />
-                </button>
               </div>
+
+              <div className="mb-6">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#102022] mb-2">Electrical Phasing</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {["Single Phase", "3 Phase", "Not sure"].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => updateData({ phasing: p })}
+                      className={`p-3 rounded-xl border text-center text-xs transition-all ${
+                        data.phasing === p
+                          ? "border-[#df6f24] bg-[#fff7f0] text-[#df6f24] font-bold"
+                          : "border-[#ddd7ca] bg-white text-[#667376] hover:border-[#df6f24]"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={nextStep}
+                className="w-full bg-[#102022] hover:bg-[#172022] text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center text-sm shadow-md"
+              >
+                Continue <ArrowRight className="w-4 h-4 ml-2" />
+              </button>
             </motion.div>
           )}
 
-          {/* STEP 4: Address */}
+          {/* STEP 4: Property Address */}
           {step === 4 && (
             <motion.div key="step4" variants={slideVariants} initial="initial" animate="animate" exit="exit" className="flex-1 flex flex-col justify-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-primary-100 text-primary-600 rounded-full mb-6 mx-auto">
+              <div className="flex items-center justify-center w-12 h-12 bg-[#f6f3ec] text-[#df6f24] rounded-full mb-4 mx-auto border border-[#ddd7ca]">
                 <MapPin className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 mb-8">
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-center text-[#102022] mb-2">
                 Where is the property located?
               </h2>
+              <p className="text-center text-[#667376] text-sm mb-6">Required to check local solar irradiance and grid connection rules.</p>
               
-              <div className="space-y-4 relative">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Property Address</label>
-                  <div className="relative">
-                    <input 
-                      type="text" 
-                      value={data.address}
-                      onChange={handleAddressChange}
-                      placeholder="e.g. 123 Smith Street, Perth WA 6000"
-                      autoComplete="street-address"
-                      maxLength={250}
-                      className="w-full px-4 py-3 pr-10 rounded-xl border-2 border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 outline-none transition-all text-lg"
-                    />
-                  </div>
-                </div>
-                
-                <button disabled={data.address.length < 5} onClick={nextStep} className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center text-lg shadow-lg shadow-primary-600/30">
-                  Continue <ArrowRight className="w-5 h-5 ml-2" />
-                </button>
+              <div className="mb-6">
+                <input
+                  type="text"
+                  required
+                  value={data.address}
+                  onChange={handleAddressChange}
+                  placeholder="e.g. 12 St Georges Terrace, Perth WA 6000"
+                  className="w-full px-4 py-3 rounded-xl border border-[#ddd7ca] focus:border-[#df6f24] focus:ring-2 focus:ring-[#df6f24]/20 outline-none transition-all text-sm"
+                />
               </div>
+
+              <button
+                disabled={data.address.length < 3}
+                onClick={nextStep}
+                className="w-full bg-[#102022] hover:bg-[#172022] disabled:bg-[#ddd7ca] disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center text-sm shadow-md"
+              >
+                Continue <ArrowRight className="w-4 h-4 ml-2" />
+              </button>
             </motion.div>
           )}
 
           {/* STEP 5: Contact Info */}
           {step === 5 && (
             <motion.form key="step5" onSubmit={submitLead} variants={slideVariants} initial="initial" animate="animate" exit="exit" className="flex-1 flex flex-col justify-center">
-              <div className="flex items-center justify-center w-12 h-12 bg-primary-100 text-primary-600 rounded-full mb-6 mx-auto">
+              <div className="flex items-center justify-center w-12 h-12 bg-[#f6f3ec] text-[#df6f24] rounded-full mb-4 mx-auto border border-[#ddd7ca]">
                 <User className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-center text-slate-900 mb-2">
-                Who should we send the assessment to?
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-center text-[#102022] mb-2">
+                Where should we send the assessment?
               </h2>
-              <p className="text-center text-slate-500 mb-6">Your details are secure and will only be used for this assessment.</p>
+              <p className="text-center text-[#667376] text-sm mb-4">Your details are kept confidential under our Epistemic Quarantine protocol.</p>
               
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                  <input required maxLength={100} type="text" value={data.name} onChange={(e) => updateData({ name: e.target.value })} className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none transition-all" placeholder="John Doe" />
+                  <label className="block text-xs font-bold text-[#102022] mb-1">Full Name</label>
+                  <input required maxLength={100} type="text" value={data.name} onChange={(e) => updateData({ name: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl border border-[#ddd7ca] focus:border-[#df6f24] outline-none text-sm" placeholder="John Doe" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
-                  <input required maxLength={20} pattern="^[0-9+\s()-]+$" title="Valid phone number format only" type="tel" value={data.mobile} onChange={(e) => updateData({ mobile: e.target.value })} className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none transition-all" placeholder="0400 000 000" />
+                  <label className="block text-xs font-bold text-[#102022] mb-1">Mobile Number</label>
+                  <input required maxLength={20} pattern="^[0-9+\\s()-]+$" title="Valid phone number format only" type="tel" value={data.mobile} onChange={(e) => updateData({ mobile: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl border border-[#ddd7ca] focus:border-[#df6f24] outline-none text-sm" placeholder="0400 000 000" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                  <input required maxLength={150} type="email" value={data.email} onChange={(e) => updateData({ email: e.target.value })} className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none transition-all" placeholder="john@example.com" />
+                  <label className="block text-xs font-bold text-[#102022] mb-1">Email Address</label>
+                  <input required maxLength={150} type="email" value={data.email} onChange={(e) => updateData({ email: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl border border-[#ddd7ca] focus:border-[#df6f24] outline-none text-sm" placeholder="john@example.com" />
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 mb-8 bg-green-50/50 p-4 rounded-xl border border-green-200">
-                <Lock className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
-                <div className="text-xs text-slate-700 leading-relaxed space-y-1">
-                  <p><strong>Strict Privacy Guarantee:</strong> By submitting, you confirm these are your own details. Your data is secured with bank-level encryption.</p>
-                  <p>By law, your information <strong>will never be sold</strong> to third parties, and you will <strong>not</strong> be subjected to spam, junk mail, or endless cold calls. We only use this to provide your specific WA wholesale assessment.</p>
-                </div>
-              </div>
+              {error && <p className="text-red-600 text-xs mb-3 text-center">{error}</p>}
 
-              {error && <p className="text-red-600 text-sm mb-4 text-center">{error}</p>}
-
-              <button type="submit" disabled={isSubmitting} className="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold py-4 rounded-xl transition-all shadow-xl shadow-accent-500/30 flex items-center justify-center text-lg hover:scale-[1.02] active:scale-95">
-                {isSubmitting ? "Processing..." : "Get My Assessment Now"}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-[#df6f24] hover:bg-[#c95716] text-white font-bold py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center text-sm"
+              >
+                {isSubmitting ? "Transmitting Assessment..." : "Submit Solar Assessment →"}
               </button>
             </motion.form>
           )}
