@@ -98,36 +98,36 @@ export default function Home() {
                   </div>
                   <div className="lawn"></div>
                 </div>
+              </div>
 
-                <div className="float-card card-energy">
-                  <span className="check">✓</span>
-                  <strong>Energy profile</strong>
-                  <span>Your home, bills and household needs.</span>
-                </div>
+              <div className="float-card card-energy">
+                <span className="check">✓</span>
+                <strong>Energy profile</strong>
+                <span>Your home, bills and household needs.</span>
+              </div>
 
-                <div className="float-card card-design">
-                  <span className="check">✓</span>
-                  <strong>System design</strong>
-                  <span>Built around your actual energy use.</span>
-                </div>
+              <div className="float-card card-design">
+                <span className="check">✓</span>
+                <strong>System design</strong>
+                <span>Built around your actual energy use.</span>
+              </div>
 
-                <div className="float-card card-price">
-                  <span className="check">✓</span>
-                  <strong>Quoted build</strong>
-                  <span>Transparent system cost before installer selection.</span>
-                </div>
+              <div className="float-card card-price">
+                <span className="check">✓</span>
+                <strong>Quoted build</strong>
+                <span>Transparent system cost before installer selection.</span>
+              </div>
 
-                <div className="float-card card-escrow">
-                  <span className="check">✓</span>
-                  <strong>Escrow protection</strong>
-                  <span>Funds are structured to support eligible warranty obligations.</span>
-                </div>
+              <div className="float-card card-escrow">
+                <span className="check">✓</span>
+                <strong>Escrow protection</strong>
+                <span>Funds are structured to support eligible warranty obligations.</span>
+              </div>
 
-                <div className="float-card card-match">
-                  <span className="check">✓</span>
-                  <strong>Installer match</strong>
-                  <span>Vetted WA electrical companies matched to your project.</span>
-                </div>
+              <div className="float-card card-match">
+                <span className="check">✓</span>
+                <strong>Installer match</strong>
+                <span>Vetted WA electrical companies matched to your project.</span>
               </div>
             </div>
 
