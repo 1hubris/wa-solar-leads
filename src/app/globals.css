@@ -226,15 +226,17 @@ button, input, select, textarea { font: inherit; }
   .hero-copy { padding: 52px 0 20px; }
   .hero h1 { font-size: 52px; }
   .hero-lead { font-size: 16px; }
-  .hero-visual { min-height: 430px; }
+  .hero-visual { min-height: 480px; }
   .home-scene { width: 100%; height: 380px; }
-  .float-card { min-width: 150px; padding: 11px 12px; }
-  .float-card span { font-size: 10px; }
-  .card-energy { left: 0; }
-  .card-design { right: 0; }
-  .card-price { left: 2%; bottom: 3%; }
-  .card-match { right: 0; bottom: -1%; }
-  .card-escrow { right: 4%; bottom: 32%; }
+  .float-card { min-width: 140px; max-width: 235px; padding: 10px 12px; }
+  .float-card strong { font-size: 11.5px; margin-bottom: 3px; }
+  .float-card span { font-size: 10px; line-height: 1.35; }
+  .float-card .check { width: 18px; height: 18px; font-size: 10px; margin-left: 6px; }
+  .card-energy { left: 0; top: 12px; }
+  .card-design { right: 0; top: 82px; }
+  .card-escrow { right: 0; bottom: 148px; }
+  .card-price { left: 0; bottom: 74px; min-width: 140px; }
+  .card-match { right: 0; bottom: 2px; }
   .hero-proof { gap: 18px; }
   .hero-proof .proof { padding: 0 12px; }
   .proof strong { font-size: 23px; }
