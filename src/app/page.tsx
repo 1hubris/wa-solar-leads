@@ -212,7 +212,7 @@ export default function Home() {
               <div className="flow-arrow">→</div>
               <div className="flow-box"><strong>Price war</strong><span className="muted">margin is the battleground.</span></div>
               <div className="flow-arrow">→</div>
-              <div className="flow-box"><strong>Risk</strong><span className="muted">thin margin, weaker resilience.</span></div>
+              <div className="flow-box"><strong>Risk</strong><span className="muted">Corners get cut, subcontractors do half the job and you pay the price.</span></div>
             </div>
             <div className="rule" style={{ background: "rgba(255,255,255,.1)", margin: "42px 0" }}></div>
             <div className="flow">
