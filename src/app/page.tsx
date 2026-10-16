@@ -165,31 +165,31 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Philosophy: Solar should be designed before it is sold */}
+        {/* Philosophy: No door knockers. Escrow-protected solar. */}
         <section id="philosophy" className="section">
           <div className="container">
             <div className="kicker-row">
               <div>
                 <div className="eyebrow">A better way to go solar</div>
-                <h2 className="serif">Solar should be designed<br />before it is sold.</h2>
+                <h2 className="serif">No door knockers.<br />Escrow-protected solar.</h2>
               </div>
-              <p>Instead of starting with a salesperson, we start with your house, energy use and project requirements — then build a transparent procurement pathway around it.</p>
+              <p>Traditional solar companies inflate system prices to fund aggressive door knockers and high-pressure sales commissions. Our pricing architecture removes those commissions from the equation—allowing our in-house design consultants to deliver comfortable, accurate consultations, fair pricing, and Escrow-protected installs.</p>
             </div>
             <div className="grid-3">
               <div className="card">
                 <div className="icon">⌂</div>
-                <h3>Energy Profile</h3>
-                <p>We analyse your home, bills and future needs so the system is sized around actual consumption rather than a generic package.</p>
+                <h3>No Bloated Commissions</h3>
+                <p>By removing door knockers and aggressive sales-rep commissions from the equation, our pricing model keeps your solar installation fair, comfortable, and genuinely affordable.</p>
               </div>
               <div className="card">
                 <div className="icon">⌗</div>
-                <h3>Build Cost</h3>
-                <p>We calculate the intended equipment, labour and site extras before an installer is selected, creating a single project price.</p>
+                <h3>Escrow Protection First</h3>
+                <p>Community Escrow protection is the core pillar of every build—attaching a dedicated reserve mechanism to eligible projects so your warranty support never depends on a single installer.</p>
               </div>
               <div className="card">
                 <div className="icon">↗</div>
-                <h3>Installer Match</h3>
-                <p>We tender the defined project to suitable, vetted WA electrical companies instead of auctioning a raw homeowner lead.</p>
+                <h3>In-House Design &amp; Vetted Install</h3>
+                <p>Our specialised in-house design consultants work with you comfortably to engineer the exact system your home needs, then dispatch the build to a vetted WA electrical company.</p>
               </div>
             </div>
           </div>
