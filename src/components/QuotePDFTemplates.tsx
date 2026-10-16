@@ -119,7 +119,7 @@ export const CustomerQuoteTemplate = ({ data }: { data: QuoteData }) => {
 
           <div className="flex justify-between text-blue-300 pt-1">
             <span>Sunny State Warranty Assurance Fund</span>
-            <span>Included ($150)</span>
+            <span>Included ($650)</span>
           </div>
 
           <div className="flex justify-between items-end border-t-2 border-primary-700 pt-6 mt-4">
@@ -347,7 +347,7 @@ export const InstallerWorkOrderTemplate = ({ data }: { data: QuoteData }) => {
       <div className="flex items-start gap-4 bg-purple-50 p-4 rounded-xl border border-purple-100 mt-4">
         <ShieldCheck className="w-6 h-6 text-purple-500 flex-shrink-0" />
         <p className="text-xs text-purple-800 leading-relaxed">
-          <strong>Warranty Assurance Fund:</strong> This job is backed by the Sunny State Warranty Assurance Fund. $150 has been safely escrowed by the brokerage from the marketing fee to cover future orphan warranty labor claims, ensuring maximum protection for both the customer and the installer network.
+          <strong>Warranty Assurance Fund:</strong> This job is backed by the Sunny State Warranty Assurance Fund. $650 (built into the customer quote) has been safely escrowed by the brokerage to fund future warranty obligations and orphan full-system replacements, ensuring maximum protection for both the customer and the installer network.
         </p>
       </div>
 

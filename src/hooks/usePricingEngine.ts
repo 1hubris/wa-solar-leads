@@ -199,7 +199,7 @@ export function usePricingEngine() {
   
   const installerRequiredGross = baseFee + estLaborCost + estHardwareCost + totalExtrasCost;
   
-  const warrantyAssuranceFund = 150;
+  const warrantyAssuranceFund = 650;
   
   // The absolute minimum money required to pay for Hardware, Install, Lead Gen, and Warranty Fund
   const totalBaseCost = installerRequiredGross + marketingFee + warrantyAssuranceFund;

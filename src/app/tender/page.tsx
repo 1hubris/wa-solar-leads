@@ -78,7 +78,7 @@ export default function Marketplace() {
     totalClaimedVolume: 3450,
     activeOrdersCount: 3,
     claimedOrdersCount: 1,
-    warrantyReservePool: 600,
+    warrantyReservePool: 2600,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [tickerMessage, setTickerMessage] = useState<string>("Market Open • High Volume Trading Active");
@@ -312,7 +312,7 @@ export default function Marketplace() {
         totalLeadGenPayout: 3500,
         installerNetRevenue: selectedPDFJob.payout,
         estInstallerProfit: Math.max(0, selectedPDFJob.payout - selectedPDFJob.hardwareCost - selectedPDFJob.laborCost),
-        warrantyAssuranceFund: 150,
+        warrantyAssuranceFund: 650,
       }
     : null;
 
@@ -594,7 +594,7 @@ export default function Marketplace() {
 
                     {/* Warranty Escrow */}
                     <div className="hidden lg:flex lg:col-span-1 flex-col items-end justify-center">
-                      <span className="text-xs font-mono text-purple-400 font-bold">$150.00</span>
+                      <span className="text-xs font-mono text-purple-400 font-bold">$650.00</span>
                       <span className="text-[9px] text-slate-500 uppercase tracking-widest">Escrowed</span>
                     </div>
 
@@ -840,7 +840,7 @@ export default function Marketplace() {
               <span className="text-xs text-purple-400 group-hover:underline">View Fund</span>
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Every single contract traded includes a pre-deducted $150 escrow strictly held by Sunny State to fund future orphan warranty labor call-outs.
+              Every single contract traded includes a customer-funded $650 escrow strictly held by Sunny State to fund future warranty obligations and orphan full-system replacements.
             </p>
           </div>
 
@@ -894,7 +894,7 @@ export default function Marketplace() {
                 </div>
                 <div className="text-right">
                   <span className="text-xs text-purple-400 uppercase tracking-widest font-bold block">Warranty Escrow</span>
-                  <span className="font-mono font-bold text-slate-300">$150.00 Deducted</span>
+                  <span className="font-mono font-bold text-slate-300">$650.00 Escrowed</span>
                 </div>
               </div>
 
@@ -1111,11 +1111,11 @@ export default function Marketplace() {
                 <span className="font-mono font-black text-3xl text-purple-300">
                   ${metrics.warrantyReservePool.toLocaleString()} AUD
                 </span>
-                <span className="text-[10px] text-purple-400/80 block mt-1">($150 per completed installation)</span>
+                <span className="text-[10px] text-purple-400/80 block mt-1">($650 per completed installation)</span>
               </div>
 
               <p className="text-slate-400 leading-relaxed">
-                This fund solves the "orphan solar system" crisis. If an installer ceases trading or is unavailable, any approved contractor on SunnyEX can claim a flat $350-$450 fee to perform warranty service call-outs.
+                This fund solves the "orphan solar system" crisis. If an original installer ceases trading or is unable to fulfill warranty claims, Sunny State dispatches a vetted SunnyEX contractor to execute a full system replacement and issue a fresh Electrical Safety Certificate.
               </p>
             </div>
 

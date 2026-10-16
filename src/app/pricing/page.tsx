@@ -738,7 +738,7 @@ export default function PricingCalculator() {
                   
                   <div className="flex justify-between text-slate-600 pt-1 border-b border-slate-300 pb-2">
                     <span>- Warranty Escrow Trust</span>
-                    <span className="text-red-500">-$150.00</span>
+                    <span className="text-red-500">-$650.00</span>
                   </div>
                   <div className="flex justify-between text-base font-bold text-slate-800 mb-4 pt-1">
                     <span>Net Installer Revenue</span>
@@ -749,10 +749,10 @@ export default function PricingCalculator() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <div className="flex justify-between items-center text-blue-900 font-bold text-[13px] mb-1">
                       <span>Total Brokerage Invoice (Installer Owes Us)</span>
-                      <span>${(totalLeadGenPayout + totalConsultantPayout + 150).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                      <span>${(totalLeadGenPayout + totalConsultantPayout + 650).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
                     <div className="text-[10px] text-blue-600 font-bold uppercase tracking-wide">
-                      INCLUDES: LEAD GEN (${totalLeadGenPayout.toLocaleString()}) + CONSULTANT (${totalConsultantPayout.toLocaleString()}) + WARRANTY ESCROW ($150)
+                      INCLUDES: LEAD GEN (${totalLeadGenPayout.toLocaleString()}) + CONSULTANT (${totalConsultantPayout.toLocaleString()}) + WARRANTY ESCROW ($650)
                     </div>
                   </div>
 

@@ -75,7 +75,7 @@ export async function GET(req: Request) {
     // Metrics based on the paginated window (or we could run a separate aggregate query)
     const totalVolume = available.reduce((acc, j) => acc + j.payout, 0);
     const totalClaimedVolume = claimed.reduce((acc, j) => acc + j.payout, 0);
-    const warrantyReservePool = jobs.length * 150;
+    const warrantyReservePool = jobs.length * 650;
 
     return NextResponse.json({
       success: true,
@@ -220,7 +220,7 @@ export async function POST(req: Request) {
         payout: parsed.installerNetRevenue,
         hardwareCost: parsed.estHardwareCost, // We could force serverEstHardware here
         laborCost: parsed.estLaborCost,       // We could force serverEstLabor here
-        warrantyFund: 150,
+        warrantyFund: 650,
         leadGenCut: parsed.leadGenCut,
         consultantCut: parsed.consultantCut,
         timeRemaining: "45:00",
