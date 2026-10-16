@@ -23,7 +23,7 @@ export default function Home() {
             <Link className="active" href="/">Home</Link>
             <a href="#process">How It Works</a>
             <a href="#philosophy">Why Us</a>
-            <Link href="/tender">Installer Network</Link>
+            <a href="#network">Installer Network</a>
             <a href="#finance">Finance</a>
             <a href="#escrow">Escrow</a>
           </nav>
@@ -231,23 +231,19 @@ export default function Home() {
         <section className="section">
           <div className="container market-shell">
             <div>
-              <div className="eyebrow">SunnyEX tender board</div>
+              <div className="eyebrow">Private installer dispatch</div>
               <h2 className="serif" style={{ fontSize: "clamp(46px,5vw,70px)", lineHeight: 1.02, margin: "20px 0" }}>
                 Your quote isn't sent to three salespeople.
               </h2>
               <p className="hero-lead" style={{ fontSize: "18px" }}>
-                Once the project is designed and priced, it enters a controlled marketplace where vetted installers can review the scope and claim jobs that fit their capacity.
+                Once your system is designed with our in-house consultant and priced transparently, it enters our private commercial marketplace where vetted WA electrical companies claim jobs that fit their capacity.
               </p>
-              <div className="hero-actions">
-                <Link className="btn btn-primary" href="/tender">Explore the Network →</Link>
-                <a className="btn btn-light" href="#process">See SunnyEX</a>
-              </div>
             </div>
 
             <div className="market-card">
               <div className="market-card-top">
                 <div className="market-id">Project #SSQ-1047</div>
-                <div className="pill-live">Live Tender</div>
+                <div className="pill-live">Private Tender</div>
               </div>
               <div className="market-title">Perth Metro · Tile Roof · 3 Phase</div>
               <div className="market-meta">
@@ -261,17 +257,17 @@ export default function Home() {
                   <small>Indicative project economics</small>
                   <strong>$4,200.00</strong>
                 </div>
-                <Link className="btn btn-accent" href="/tender">Claim Project →</Link>
+                <span className="btn btn-accent" style={{ pointerEvents: "none", cursor: "default" }}>Vetted Partners Only</span>
               </div>
               <div style={{ marginTop: "16px", fontSize: "11px", color: "#9eb0af" }}>
-                Homeowner PII remains confidential until an eligible installer claims the project.
+                Private B2B dispatch terminal — Homeowner PII remains quarantined until an accredited WA installer is assigned.
               </div>
             </div>
           </div>
         </section>
 
         {/* Vetted WA Installer Network */}
-        <section className="section" style={{ background: "#f4f0e8" }}>
+        <section id="network" className="section" style={{ background: "#f4f0e8" }}>
           <div className="container network">
             <div>
               <div className="eyebrow">Vetted WA installer network</div>
@@ -433,7 +429,7 @@ export default function Home() {
               <div className="footer-links" style={{ marginTop: "12px" }}>
                 <a href="#process">How It Works</a>
                 <a href="#philosophy">Why Us</a>
-                <Link href="/tender">Installer Network</Link>
+                <a href="#network">Installer Network</a>
                 <a href="#escrow">Escrow</a>
               </div>
             </div>
@@ -442,7 +438,6 @@ export default function Home() {
               <div className="footer-links" style={{ marginTop: "12px" }}>
                 <a href="#finance">Finance</a>
                 <Link href="/assessment">Assessment</Link>
-                <Link href="/tender">SunnyEX</Link>
               </div>
             </div>
             <div>
