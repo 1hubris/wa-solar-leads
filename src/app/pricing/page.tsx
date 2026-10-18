@@ -30,8 +30,36 @@ export default function PricingCalculator() {
     monthlyRepayment, totalCustomerCost,
     rawOvers, cappedOvers, consultantOvers, leadGenOvers, installerOvers,
     totalConsultantPayout, totalLeadGenPayout, installerGrossCashIn,
+    totalBrokerageClearing, upfrontCustomerDeposit, stcAndFinanceSplitDeduction,
     installerNetRevenue, estInstallerProfit, quoteData, marketingFee, baseFee
   } = usePricingEngine();
+
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [showAdminPinModal, setShowAdminPinModal] = useState(false);
+  const [adminPinInput, setAdminPinInput] = useState("");
+  const [adminPinError, setAdminPinError] = useState(false);
+
+  const handleRequestAdminView = () => {
+    if (isAdminUnlocked) {
+      setViewMode("Admin");
+    } else {
+      setAdminPinInput("");
+      setAdminPinError(false);
+      setShowAdminPinModal(true);
+    }
+  };
+
+  const handleVerifyAdminPin = () => {
+    const expectedPin = process.env.NEXT_PUBLIC_ADMIN_PIN || "2026";
+    if (adminPinInput.trim() === expectedPin) {
+      setIsAdminUnlocked(true);
+      setViewMode("Admin");
+      setShowAdminPinModal(false);
+      setAdminPinError(false);
+    } else {
+      setAdminPinError(true);
+    }
+  };
 
   const [newExtraName, setNewExtraName] = useState("");
   const [newExtraCost, setNewExtraCost] = useState("");
@@ -145,7 +173,7 @@ export default function PricingCalculator() {
           </div>
           
           <div className="flex items-center bg-white rounded-lg shadow-sm border border-slate-200 p-1">
-            <button onClick={() => setViewMode("Admin")} className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${viewMode === "Admin" ? "bg-slate-800 text-white shadow" : "text-slate-500 hover:bg-slate-50"}`}>Admin (Lead Gen) View</button>
+            <button onClick={handleRequestAdminView} className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${viewMode === "Admin" ? "bg-slate-800 text-white shadow" : "text-slate-500 hover:bg-slate-50"}`}>Admin (Lead Gen) View</button>
             <button onClick={() => setViewMode("Consultant")} className={`px-4 py-2 text-xs font-bold rounded-md transition-all ${viewMode === "Consultant" ? "bg-primary-600 text-white shadow" : "text-slate-500 hover:bg-slate-50"}`}>Consultant View</button>
           </div>
         </div>
@@ -745,14 +773,22 @@ export default function PricingCalculator() {
                     <span>${installerNetRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                   </div>
                   
-                  {/* Back-end Invoicing Logic */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-blue-900 font-bold text-[13px] mb-1">
-                      <span>Total Brokerage Invoice (Installer Owes Us)</span>
-                      <span>${(totalLeadGenPayout + totalConsultantPayout + 650).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  {/* Source-Cleared Split Settlement Logic (Zero B2B Default Exposure) */}
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 space-y-1.5">
+                    <div className="flex justify-between items-center text-emerald-900 font-bold text-[13px]">
+                      <span>Source-Cleared Brokerage & Escrow (Zero Credit Risk)</span>
+                      <span>${totalBrokerageClearing.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
-                    <div className="text-[10px] text-blue-600 font-bold uppercase tracking-wide">
-                      INCLUDES: LEAD GEN (${totalLeadGenPayout.toLocaleString()}) + CONSULTANT (${totalConsultantPayout.toLocaleString()}) + WARRANTY ESCROW ($650)
+                    <div className="flex justify-between text-[11px] text-emerald-800">
+                      <span>1. Upfront Customer Booking Deposit (Paid to Sunny State):</span>
+                      <span className="font-bold">${upfrontCustomerDeposit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] text-emerald-800">
+                      <span>2. Tri-Party STC / Finance Split-Settlement Deduction:</span>
+                      <span className="font-bold">${stcAndFinanceSplitDeduction.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div className="text-[10px] text-emerald-700 font-bold uppercase tracking-wide pt-1 border-t border-emerald-200/80">
+                      CLEARED AT SOURCE: LEAD GEN (${totalLeadGenPayout.toLocaleString()}) + CONSULTANT (${totalConsultantPayout.toLocaleString()}) + RESERVE ($650) • $0 POST-INSTALL DEBT
                     </div>
                   </div>
 
@@ -905,6 +941,47 @@ export default function PricingCalculator() {
             <div className="p-4 bg-slate-50 flex gap-3 justify-end border-t border-slate-200">
               <button onClick={() => setShowFinalizationModal(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800">Cancel</button>
               <button onClick={() => { setShowFinalizationModal(false); handlePublishToTender(); }} disabled={isPublishingTender} className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded shadow hover:bg-blue-700">Confirm & Publish to SunnyEX</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADMIN TELEMETRY PIN MODAL */}
+      {showAdminPinModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-700 p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <ShieldCheck className="w-5 h-5 text-slate-900" />
+              <h3 className="font-bold text-lg text-slate-900">Admin Telemetry Locked</h3>
+            </div>
+            <p className="text-xs text-slate-500 mb-4">
+              Enter the Founder Admin PIN to unlock Lead Gen margins, wholesale hardware tuning, and SunnyEX order book broadcasting.
+            </p>
+            <input
+              type="password"
+              value={adminPinInput}
+              onChange={(e) => { setAdminPinInput(e.target.value); setAdminPinError(false); }}
+              onKeyDown={(e) => { if (e.key === "Enter") handleVerifyAdminPin(); }}
+              placeholder="Enter Admin PIN"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-mono text-sm mb-2 focus:border-slate-900 outline-none"
+              autoFocus
+            />
+            {adminPinError && (
+              <p className="text-xs text-red-600 font-bold mb-3">Invalid Admin PIN. Access denied.</p>
+            )}
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setShowAdminPinModal(false)}
+                className="flex-1 py-2.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleVerifyAdminPin}
+                className="flex-1 py-2.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all"
+              >
+                Unlock Admin
+              </button>
             </div>
           </div>
         </div>

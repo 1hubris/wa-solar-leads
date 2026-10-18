@@ -197,12 +197,30 @@ export async function POST(req: Request) {
     const activeBattRate = parsed.hardwareTier === 3 ? 600 : parsed.hardwareTier === 2 ? 500 : 415;
     const serverEstHardware = (parsed.pvSize * activePvRate) + (parsed.batterySize * activeBattRate);
     const serverEstLabor = 1250 + (parsed.pvSize > 6.6 ? (parsed.pvSize - 6.6) * 100 : 0) + (parsed.batterySize > 0 ? 650 : 0);
+    const serverMinMarketingFee = parsed.hardwareTier === 3 ? 5000 : parsed.hardwareTier === 2 ? 4200 : 3500;
+    const serverBaseWarrantyPerKw = parsed.hardwareTier === 3 ? 200 : parsed.hardwareTier === 2 ? 160 : 130;
+    const serverBatteryWarrantyBuffer = parsed.batterySize > 0 ? 300 : 0;
+    const serverOriginalBaseFee = Math.round((parsed.pvSize * serverBaseWarrantyPerKw) + serverBatteryWarrantyBuffer);
+    const serverPaddedLabor = 1500 + (parsed.pvSize > 6.6 ? (parsed.pvSize - 6.6) * 120 : 0) + (parsed.batterySize > 0 ? 830 : 0);
+    const serverPaddedPvRate = parsed.hardwareTier === 3 ? 750 : parsed.hardwareTier === 2 ? 550 : 400;
+    const serverPaddedBattRate = parsed.hardwareTier === 3 ? 650 : parsed.hardwareTier === 2 ? 550 : 450;
+    const serverPaddedHardware = (parsed.pvSize * serverPaddedPvRate) + (parsed.batterySize * serverPaddedBattRate);
+    const serverMinTotalBaseCost = serverOriginalBaseFee + serverPaddedLabor + serverPaddedHardware + serverMinMarketingFee + 650;
+    const serverMinConsultantCut = Math.round(Math.ceil(serverMinTotalBaseCost / (1 - 0.040)) * 0.040);
     
-    // Validate that the client's requested costs match the server's absolute baseline truth
+    // Validate that the client's requested costs and brokerage cuts match the server's absolute baseline truth
     // Allowing a small 5% buffer for floating point or minor sync differences
-    if (parsed.estHardwareCost < serverEstHardware * 0.95 || parsed.estLaborCost < serverEstLabor * 0.95) {
-       return NextResponse.json({ success: false, error: "Economic validation failed. Costs do not match server constraints." }, { status: 400 });
+    if (
+      parsed.estHardwareCost < serverEstHardware * 0.95 ||
+      parsed.estLaborCost < serverEstLabor * 0.95 ||
+      parsed.leadGenCut < serverMinMarketingFee * 0.95 ||
+      parsed.consultantCut < serverMinConsultantCut * 0.95
+    ) {
+       return NextResponse.json({ success: false, error: "Economic validation failed. Costs or brokerage margins do not match server constraints." }, { status: 400 });
     }
+
+    const enforcedLeadGenCut = Math.max(serverMinMarketingFee, Math.round(parsed.leadGenCut));
+    const enforcedConsultantCut = Math.max(serverMinConsultantCut, Math.round(parsed.consultantCut));
 
     const randomId = parsed.id || `JOB-${Math.floor(1000 + Math.random() * 9000)}-WA`;
     const extrasStr = JSON.stringify(parsed.activeExtras);
@@ -218,11 +236,11 @@ export async function POST(req: Request) {
         roof: parsed.roof,
         extras: extrasStr,
         payout: parsed.installerNetRevenue,
-        hardwareCost: parsed.estHardwareCost, // We could force serverEstHardware here
-        laborCost: parsed.estLaborCost,       // We could force serverEstLabor here
+        hardwareCost: parsed.estHardwareCost,
+        laborCost: parsed.estLaborCost,
         warrantyFund: 650,
-        leadGenCut: parsed.leadGenCut,
-        consultantCut: parsed.consultantCut,
+        leadGenCut: enforcedLeadGenCut,
+        consultantCut: enforcedConsultantCut,
         timeRemaining: "45:00",
         isHot: true,
         status: "Available",
@@ -256,8 +274,11 @@ export async function POST(req: Request) {
 }
 
 function serializeJob(job: any) {
+  const { leadGenCut, consultantCut, ...publicSafeJob } = job;
   return {
-    ...job,
+    ...publicSafeJob,
+    leadGenCut: 0,
+    consultantCut: 0,
     extras: job.extras ? JSON.parse(job.extras) : [],
   };
 }

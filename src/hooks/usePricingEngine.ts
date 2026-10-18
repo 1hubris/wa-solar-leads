@@ -8,7 +8,7 @@ export function usePricingEngine() {
   const [hardwareTier, setHardwareTier] = useState<number>(1);
   const [brandSpecific, setBrandSpecific] = useState<boolean>(false);
   const [requestedBrand, setRequestedBrand] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"Admin" | "Consultant">("Admin");
+  const [viewMode, setViewMode] = useState<"Admin" | "Consultant">("Consultant");
   
   // The fixed acquisition/marketing fee paid to the Lead Gen entity
   // Massively increased to absorb the margin stripped from the capacity-filler installers
@@ -247,9 +247,14 @@ export function usePricingEngine() {
   const totalConsultantPayout = baseCommission + consultantOvers;
   const totalLeadGenPayout = marketingFee + leadGenOvers;
 
-  // 7. Installer Real-World Cash Flow Math
+  // 7. Installer Real-World Cash Flow & Source-Cleared Split Settlement Math
   const installerGrossCashIn = Math.round(cashReceivedFromFinance + totalRebates);
-  const installerNetRevenue = installerGrossCashIn - totalConsultantPayout - totalLeadGenPayout - warrantyAssuranceFund;
+  const totalBrokerageClearing = totalLeadGenPayout + totalConsultantPayout + warrantyAssuranceFund;
+  const upfrontCustomerDeposit = financeVendor === "Cash"
+    ? Math.min(sellPrice, Math.max(Math.round(sellPrice * 0.10), Math.min(sellPrice, totalBrokerageClearing)))
+    : Math.min(sellPrice, Math.round(sellPrice * 0.10));
+  const stcAndFinanceSplitDeduction = Math.max(0, totalBrokerageClearing - upfrontCustomerDeposit);
+  const installerNetRevenue = installerGrossCashIn - totalBrokerageClearing;
   const netProfit = installerNetRevenue - estLaborCost - estHardwareCost - totalExtrasCost;
   
   // Hardware/Labor Estimator Logic (Now perfectly aligns with the Cost-Plus formula)
@@ -328,6 +333,7 @@ export function usePricingEngine() {
     monthlyRepayment, totalCustomerCost,
     rawOvers, cappedOvers, consultantOvers, leadGenOvers, installerOvers,
     totalConsultantPayout, totalLeadGenPayout, installerGrossCashIn,
+    totalBrokerageClearing, upfrontCustomerDeposit, stcAndFinanceSplitDeduction,
     installerNetRevenue, estInstallerProfit, quoteData, marketingFee, baseFee
   };
 }

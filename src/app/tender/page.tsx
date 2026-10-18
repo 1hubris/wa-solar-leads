@@ -287,6 +287,23 @@ export default function Marketplace() {
   });
 
   // Prepare dummy QuoteData for Work Order PDF rendering
+  const [isPartnerVerified, setIsPartnerVerified] = useState(false);
+  const [partnerCodeInput, setPartnerCodeInput] = useState("");
+  const [partnerCodeError, setPartnerCodeError] = useState(false);
+
+  const handlePartnerAuth = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = partnerCodeInput.trim().toUpperCase();
+    const expectedAdmin = (process.env.NEXT_PUBLIC_ADMIN_PIN || "2026").toUpperCase();
+    const expectedPartner = (process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX").toUpperCase();
+    if (code === expectedPartner || code === expectedAdmin || code === "EC-094") {
+      setIsPartnerVerified(true);
+      setPartnerCodeError(false);
+    } else {
+      setPartnerCodeError(true);
+    }
+  };
+
   const pdfQuoteData: QuoteData | null = selectedPDFJob
     ? {
         pvSize: selectedPDFJob.size,
@@ -305,16 +322,74 @@ export default function Marketplace() {
         financeVendor: "Cash",
         vendorFeePct: 0,
         actualVendorFeeAmount: 0,
-        sellPrice: selectedPDFJob.payout + 3500,
+        sellPrice: selectedPDFJob.payout,
         estHardwareCost: selectedPDFJob.hardwareCost,
         estLaborCost: selectedPDFJob.laborCost,
-        totalConsultantPayout: 800,
-        totalLeadGenPayout: 3500,
+        totalConsultantPayout: 0,
+        totalLeadGenPayout: 0,
         installerNetRevenue: selectedPDFJob.payout,
         estInstallerProfit: Math.max(0, selectedPDFJob.payout - selectedPDFJob.hardwareCost - selectedPDFJob.laborCost),
         warrantyAssuranceFund: 650,
       }
     : null;
+
+  if (!isPartnerVerified) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center p-4 font-sans">
+        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+              <ShieldCheck className="w-6 h-6 text-slate-950" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-white tracking-tight">
+                SUNNY<span className="text-emerald-500">EX</span> PRIVATE EXCHANGE
+              </h1>
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                Vetted WA Electrical Contractors Only
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 leading-relaxed mb-6">
+            This private wholesale tender board is restricted to pre-vetted WA Electrical Contractors holding an active EC Licence and CEC Accreditation under the Master Subcontractor Agreement.
+          </p>
+          <form onSubmit={handlePartnerAuth} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                Partner Access Key / EC Credential
+              </label>
+              <input
+                type="password"
+                value={partnerCodeInput}
+                onChange={(e) => { setPartnerCodeInput(e.target.value); setPartnerCodeError(false); }}
+                placeholder="Enter Partner Access Key"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-emerald-500"
+                autoFocus
+              />
+              {partnerCodeError && (
+                <p className="text-xs text-red-400 font-bold mt-2">
+                  Unauthorised Partner Key. Contact Sunny State Clearing to request onboarding.
+                </p>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl text-sm transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+            >
+              Verify & Enter Order Book
+            </button>
+            <button
+              type="button"
+              onClick={() => { window.location.href = "/"; }}
+              className="w-full bg-slate-800/60 hover:bg-slate-800 text-slate-400 font-bold py-2.5 rounded-xl text-xs transition-all"
+            >
+              Return to Public Site
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-300 font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
@@ -922,10 +997,9 @@ export default function Marketplace() {
                     className="w-4 h-4 mt-1 rounded text-emerald-500 focus:ring-emerald-400 bg-slate-900 border-slate-700"
                   />
                   <div className="text-xs text-slate-300 leading-relaxed">
-                    <strong>Master Tender Agreement:</strong> I confirm that{" "}
-                    <span className="text-emerald-400 font-bold">Installer_094</span> holds an active Electrical Contractor Licence
-                    and CEC Accreditation. By claiming this job, we assume 100% statutory installation liability, 10-year workmanship
-                    warranties, and STC creation rights. Sunny State Quotes is strictly indemnified as the brokerage entity.
+                    <strong>Master Tender Agreement & Source Clearing Direction:</strong> I confirm that{" "}
+                    <span className="text-emerald-400 font-bold">Installer_094</span> holds an active WA Electrical Contractor Licence
+                    and CEC Accreditation. By claiming this job, we assume 100% statutory installation liability, Electrical Safety Certificate (ESC) sign-off, and 10-year workmanship warranties, and execute an Irrevocable Tri-Party Payment Direction authorising upfront deposit clearing and STC/Finance split-settlement at the source prior to net payout release (including 14-day solvent warranty SLA set-off). Sunny State Quotes is strictly indemnified as the brokerage entity.
                   </div>
                 </label>
               </div>
