@@ -118,8 +118,8 @@ export const CustomerQuoteTemplate = ({ data }: { data: QuoteData }) => {
           )}
 
           <div className="flex justify-between text-blue-300 pt-1">
-            <span>Sunny State Warranty Assurance Fund</span>
-            <span>Included ($650)</span>
+            <span>Sunny State Community Protection Reserve</span>
+            <span>Included in Turnkey Package</span>
           </div>
 
           <div className="flex justify-between items-end border-t-2 border-primary-700 pt-6 mt-4">
@@ -186,9 +186,10 @@ export const CustomerTermsTemplate = () => {
           </div>
 
           <div>
-            <h3 className="font-bold text-[11px] text-slate-900 uppercase mb-1">5. Warranties</h3>
-            <p><strong>5.1 Workmanship:</strong> The Installer provides a 10-Year Workmanship Warranty covering defects arising directly from the physical installation process.</p>
-            <p className="mt-2"><strong>5.2 Manufacturer Warranty:</strong> Product warranties (Panels, Inverters, Batteries) are held directly with the manufacturer. The Installer will assist in facilitating warranty claims, but is not liable for manufacturer insolvency or replacement delays.</p>
+            <h3 className="font-bold text-[11px] text-slate-900 uppercase mb-1">5. Warranties & Community Protection Reserve</h3>
+            <p><strong>5.1 Workmanship:</strong> While active, the Installer provides and solely funds a 10-Year Workmanship Warranty covering defects arising from the physical installation.</p>
+            <p className="mt-2"><strong>5.2 Manufacturer Warranty:</strong> Product defects (Panels, Inverters, Batteries) are covered directly by the manufacturer under Australian Consumer Law (ACL s 271).</p>
+            <p className="mt-2"><strong>5.3 Community Protection Reserve (Orphan Protocol):</strong> Maintained as an incidental, discretionary corporate provision (s 763E <em>Corporations Act 2001</em>; not an insurance contract or trust). Triggered strictly if the Installer enters formal ASIC Liquidation/Deregistration AND loses its WA Electrical Licence, AND an independent inspection confirms uncertifiable electrical workmanship (excluding OEM component faults). Capped at wholesale replacement of original specs up to $9,500 AUD (1 event max; excludes consequential/tariff losses) subject to annual reserve liquidity above the $50,000 Solvency Floor.</p>
           </div>
 
           <div>
@@ -347,13 +348,13 @@ export const InstallerWorkOrderTemplate = ({ data }: { data: QuoteData }) => {
       <div className="flex items-start gap-4 bg-purple-50 p-4 rounded-xl border border-purple-100 mt-4">
         <ShieldCheck className="w-6 h-6 text-purple-500 flex-shrink-0" />
         <p className="text-xs text-purple-800 leading-relaxed">
-          <strong>Warranty Assurance Fund:</strong> This job is backed by the Sunny State Warranty Assurance Fund. $650 (built into the customer quote) has been safely escrowed by the brokerage to fund future warranty obligations and orphan full-system replacements, ensuring maximum protection for both the customer and the installer network.
+          <strong>Community Protection Reserve ($650 B2B Provision):</strong> $650 of the contract economics is provisioned by the brokerage under AASB 137 exclusively for formal ASIC-verified installer insolvency events. While active, the Installer bears 100% of workmanship warranty costs ($0 Reserve draw).
         </p>
       </div>
 
       {/* Legal Acceptance */}
       <div className="mt-6 pt-4 border-t-2 border-slate-200 text-[10px] text-slate-500 italic leading-relaxed">
-        <strong>B2B Tender Conditions & Liability Transfer:</strong> By accepting this lead and proceeding with the installation, the Electrical Contracting Company acknowledges that Sunny State Quotes acts solely as a lead generation and marketing broker. The Installer agrees to assume 100% legal liability for the physical installation, STC claims, and all Australian Consumer Law (ACL) statutory warranties (including 10-year workmanship). Sunny State Quotes is explicitly indemnified against any structural, electrical, or consumer claims arising from this site.
+        <strong>B2B Tender Conditions, Set-Off & Anti-Phoenix Subrogation:</strong> By accepting this job, the Electrical Contracting Company assumes 100% legal liability for the physical installation, STC claims, Electrical Safety Certificates (ESC), and 10-year workmanship warranties. If the Installer remains active and fails to remedy a verified workmanship defect within 14 days, Sunny State Quotes may freeze order-book access and set off third-party rectification costs against any unpaid or future payouts. If the Reserve expends funds following the Installer's insolvency, Sunny State Quotes is automatically subrogated to all statutory claims against the Installer, its insurers, and—where a false or non-compliant ESC/NOC was signed under the <em>Electricity (Licensing) Regulations 1991</em> (WA)—against the certifying Nominee Electrician and Director personally.
         <br/><br/>
         <strong>Margin Integrity:</strong> The installer net revenue absorbs standard Customer Acquisition Costs (CAC). All site extras and billables must be inclusive of this final quote so the customer cannot incur extras based on predatory behaviour. If unforeseen but proven extras occur on-site, a 3-way negotiation will be entered between the consultant, the marketing entity, and the installer to balance out the overhead and preserve profitability for all parties.
       </div>
