@@ -1,5 +1,9 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+# SUNNY STATE QUOTES / WA-SOLAR-LEADS — WORKSPACE DOMAIN INVARIANTS (Priority-1 Scoped Rules)
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+1. **Source-Cleared Brokerage Settlement (`Law 65 [BC-026, ECO-27, L-015]`):** Never allow an installer to collect 100% of gross customer funds and owe brokerage fees via post-install B2B invoice. Capture total brokerage clearing (`leadGenCut + consultantCut + $650 reserve`) via the Upfront Customer Booking & Clearing Deposit (`max(10% gross, totalBrokerageClearing)`) and/or Irrevocable Tri-Party STC/Finance Split-Settlement before releasing net subcontractor payouts. Preserve the subcontractor as principal installation contractor under `Law 1`.
+2. **Incidental Corporate Reserve & Three-Gate Filter (`Law 66 [BC-029, LAW-763E, L-015]`):** The `$650 AUD` Community Protection Reserve must be legally structured as an incidental, discretionary corporate balance-sheet provision under s 763E *Corporations Act 2001* (Cth) and provisioned under AASB 137—never as standalone insurance or a statutory trust. Enforce the 3-Gate Filter:
+   - **Gate 1:** Formal ASIC Form 505 External Administration + Cancelled WA Electrical Contractor Licence (solvent installers must self-remediate within 14 days or face payout set-off).
+   - **Gate 2:** ACL s 271 OEM Statutory Warranty Exhaustion (hardware faults route to the OEM).
+   - **Gate 3:** Per-property Full System Replacement Cap of **`$17,000 AUD`** (benchmarked to 13.2kW PV, 10kW Inverter, 20kWh Battery wholesale replacement) above a hard **`$50,000 AUD` Solvency Floor**.
+3. **WA Electrical Safety Certificate (ESC) Full-Replacement Mandate (`Law 67 [BC-030, L-015]`):** Under *Electricity (Licensing) Regulations 1991* (WA), a replacement electrician cannot legally certify a bankrupt installer's defective electrical work; orphan workmanship claims must model 100% strip-and-replacement up to `$17,000 AUD`.
+4. **Margin Telemetry Quarantine (`Law 68 [ENG-07-30, PSY-16, L-015]`):** `usePricingEngine.ts` must default `viewMode` to `"Consultant"` (`Admin` view locked behind PIN), `/tender` requires Partner Access Code verification, and `GET/POST /api/tender` must enforce server-side margin floors (`leadGenCut >= $5,000`, `consultantCut >= $1,500`) while stripping both fields from public/subcontractor JSON responses.
