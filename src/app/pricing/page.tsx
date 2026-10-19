@@ -196,8 +196,8 @@ export default function PricingCalculator() {
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-500 text-sm outline-none bg-slate-50 font-semibold mb-3"
                 >
                   <option value={1}>Tier 1: Value (Jinko/GoodWe/SolaX/AlphaESS)</option>
-                  <option value={2}>Tier 2: Advanced (QCells/Sungrow/Huawei/Fronius)</option>
-                  <option value={3}>Tier 3: Premium (Maxeon/Enphase/Tesla/SigenStor)</option>
+                  <option value={2}>Tier 2: Advanced (QCells/Huawei/SigenStor)</option>
+                  <option value={3}>Tier 3: Premium (Maxeon/Enphase/Tesla/Sungrow/Fronius)</option>
                 </select>
 
                 <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">

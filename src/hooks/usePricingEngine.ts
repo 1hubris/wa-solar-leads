@@ -23,11 +23,11 @@ export function usePricingEngine() {
   const [t1PvRate, setT1PvRate] = useState<number>(320); // e.g. Jinko
   const [t1BattRate, setT1BattRate] = useState<number>(415); // e.g. AlphaESS
   
-  const [t2PvRate, setT2PvRate] = useState<number>(450); // e.g. QCells/Sungrow
-  const [t2BattRate, setT2BattRate] = useState<number>(500); 
+  const [t2PvRate, setT2PvRate] = useState<number>(450); // e.g. QCells/Huawei
+  const [t2BattRate, setT2BattRate] = useState<number>(500); // e.g. SigenStor
   
-  const [t3PvRate, setT3PvRate] = useState<number>(650); // e.g. Maxeon
-  const [t3BattRate, setT3BattRate] = useState<number>(600); // e.g. Tesla/SigenStor
+  const [t3PvRate, setT3PvRate] = useState<number>(650); // e.g. Maxeon/Sungrow/Fronius
+  const [t3BattRate, setT3BattRate] = useState<number>(600); // e.g. Tesla/Sungrow
 
   // Rebate Tuning
   const [stcValue, setStcValue] = useState<number>(39);
@@ -66,11 +66,11 @@ export function usePricingEngine() {
   if (hardwareTier === 2) {
     activePvRate = t2PvRate;
     activeBattRate = t2BattRate;
-    activeTierName = "Tier 2: Advanced (QCells/Sungrow/Huawei/Fronius)";
+    activeTierName = "Tier 2: Advanced (QCells/Huawei/SigenStor)";
   } else if (hardwareTier === 3) {
     activePvRate = t3PvRate;
     activeBattRate = t3BattRate;
-    activeTierName = "Tier 3: Premium (Maxeon/Enphase/Tesla/SigenStor)";
+    activeTierName = "Tier 3: Premium (Maxeon/Enphase/Tesla/Sungrow/Fronius)";
   }
 
   // 2. Rebates 

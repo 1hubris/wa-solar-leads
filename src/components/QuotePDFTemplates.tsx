@@ -10,7 +10,7 @@ import { Sun, Battery, ShieldCheck, Banknote, ClipboardCheck, Zap, UserCheck } f
 export const CustomerQuoteTemplate = ({ data }: { data: QuoteData }) => {
   const [dateStr, setDateStr] = useState('');
   useEffect(() => {
-    setDateStr(new Date().toLocaleDateString());
+    setDateStr(new Date().toLocaleDateString('en-AU'));
   }, []);
   return (
     <div id="customer-quote-pdf" className="bg-white p-10 w-[800px] text-slate-800" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -225,16 +225,20 @@ export const CustomerTermsTemplate = () => {
 // HIGHLY GRANULAR. NO CONSULTANT EARNINGS SHOWN.
 // ==========================================
 export const InstallerWorkOrderTemplate = ({ data }: { data: QuoteData }) => {
+  const [dateStr, setDateStr] = useState('');
+  useEffect(() => {
+    setDateStr(new Date().toLocaleDateString('en-AU'));
+  }, []);
   
   // Calculate Granular Hardware Breakdown based on Engine Math
   // PV: 40% of standard estimator. Battery: 80%. BOS: $1200 base.
   const pvCost = data.pvSize * (data.estHardwareCost / (data.pvSize + (data.batterySize || 1)) * 0.4); // Rough granular split
   const pvBrand = data.hardwareTier === 1 ? "Jinko / Trina" : data.hardwareTier === 2 ? "QCells / REC" : "Maxeon / SunPower";
   
-  const inverterBrand = data.hardwareTier === 1 ? "GoodWe / SolaX" : data.hardwareTier === 2 ? "Sungrow / Fronius" : "Enphase / Tesla";
+  const inverterBrand = data.hardwareTier === 1 ? "GoodWe / SolaX" : data.hardwareTier === 2 ? "Huawei / SigenStor" : "Enphase / Sungrow / Fronius";
   
   const battCost = data.batterySize * (data.estHardwareCost / (data.pvSize + (data.batterySize || 1)) * 0.8);
-  const battBrand = data.hardwareTier === 1 ? "AlphaESS / GoodWe" : data.hardwareTier === 2 ? "Sungrow / BYD" : "Tesla / SigenStor";
+  const battBrand = data.hardwareTier === 1 ? "AlphaESS / GoodWe" : data.hardwareTier === 2 ? "SigenStor / BYD" : "Tesla / Sungrow";
 
   const totalCalculatedHardware = data.estHardwareCost - 1200; // Remove BOS
   
@@ -256,7 +260,7 @@ export const InstallerWorkOrderTemplate = ({ data }: { data: QuoteData }) => {
         </div>
         <div className="text-right">
           <h2 className="text-lg font-bold text-slate-700">Work Order Auth</h2>
-          <p className="text-sm text-slate-500 mt-1">Date: {new Date().toLocaleDateString()}</p>
+          <p className="text-sm text-slate-500 mt-1" suppressHydrationWarning>Date: {dateStr}</p>
         </div>
       </div>
 
