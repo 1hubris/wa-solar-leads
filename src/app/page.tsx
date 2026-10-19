@@ -5,6 +5,7 @@ import { useState } from "react";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
 
   return (
     <>
@@ -154,8 +155,8 @@ export default function Home() {
             </div>
             <div className="process-step">
               <div className="process-num">04</div>
-              <h3>Escrow</h3>
-              <p>Contribute to the community protection mechanism attached to eligible jobs.</p>
+              <h3>Escrow Reserve</h3>
+              <p>Backed by an internal platform reserve allocated to eligible builds at no extra cost.</p>
             </div>
             <div className="process-step">
               <div className="process-num">05</div>
@@ -183,8 +184,8 @@ export default function Home() {
               </div>
               <div className="card">
                 <div className="icon">⌗</div>
-                <h3>Escrow Protection First</h3>
-                <p>Community Escrow protection is the core pillar of every build—attaching a dedicated reserve mechanism to eligible projects so your warranty support never depends on a single installer.</p>
+                <h3>Escrow Reserve First</h3>
+                <p>Our Community Escrow Reserve is the core pillar of every build—allocating a dedicated orphaned-warranty reserve to eligible projects so you aren&apos;t left stranded if an original installer ever closes its doors.</p>
               </div>
               <div className="card">
                 <div className="icon">↗</div>
@@ -296,19 +297,29 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Community Escrow Trust */}
+        {/* Community Escrow Reserve */}
         <section id="escrow" className="section escrow">
           <div className="container escrow-box">
             <div>
-              <div className="eyebrow">Community escrow trust</div>
+              <div className="eyebrow">Community escrow reserve</div>
               <h2 className="serif" style={{ fontSize: "clamp(46px,5vw,70px)", lineHeight: 1.02, margin: "18px 0" }}>
                 Your installer can change.<br />
-                <span style={{ color: "var(--orange)" }}>Your protection shouldn't.</span>
+                <span style={{ color: "var(--orange)" }}>Your protection shouldn&apos;t.</span>
               </h2>
               <p className="hero-lead" style={{ fontSize: "17px" }}>
-                A defined contribution is attached to participating projects so that the platform can maintain a collective protection mechanism for eligible warranty obligations. The trust model is designed around durability, transparency and long-term homeowner confidence.
+                On every participating build, Sunny State allocates a dedicated portion of its platform fee into our Community Protection Reserve to backstop eligible orphaned workmanship obligations if an assigned installer ever ceases trading. The reserve model is designed around durability, transparency, and long-term homeowner confidence.
               </p>
-              <Link className="btn btn-outline" href="/assessment" style={{ marginTop: "24px" }}>
+              <p style={{ marginTop: "14px", fontSize: "12px", lineHeight: 1.55, color: "#6e6a63", maxWidth: "560px" }}>
+                *Incidental discretionary corporate reserve operated under s 763E of the <em>Corporations Act 2001</em> (Cth) covering verified orphaned installation workmanship up to $17,000 AUD if an accredited WA installer enters formal external administration. Provided in addition to statutory consumer guarantees under the Australian Consumer Law.{" "}
+                <button
+                  type="button"
+                  onClick={() => setTermsModalOpen(true)}
+                  style={{ background: "none", border: "none", padding: 0, color: "var(--orange)", textDecoration: "underline", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}
+                >
+                  View Reserve Terms
+                </button>
+              </p>
+              <Link className="btn btn-outline" href="/assessment" style={{ marginTop: "20px" }}>
                 Get Protected Build →
               </Link>
             </div>
@@ -319,7 +330,15 @@ export default function Home() {
               </div>
               <div className="escrow-link"></div>
               <div className="escrow-link two"></div>
-              <div className="escrow-badge">Protection mechanism • subject to terms</div>
+              <button
+                type="button"
+                onClick={() => setTermsModalOpen(true)}
+                className="escrow-badge"
+                style={{ cursor: "pointer", border: "none" }}
+                title="View Community Protection Reserve Terms"
+              >
+                Protection mechanism • subject to terms
+              </button>
             </div>
           </div>
         </section>
@@ -443,9 +462,9 @@ export default function Home() {
             <div>
               <strong>Company</strong>
               <div className="footer-links" style={{ marginTop: "12px" }}>
-                <a href="#">Privacy</a>
-                <a href="#">Terms</a>
-                <a href="#">Contact</a>
+                <button type="button" onClick={() => setTermsModalOpen(true)} style={{ background: "none", border: "none", padding: 0, color: "inherit", cursor: "pointer", textAlign: "left", font: "inherit" }}>Privacy &amp; Data</button>
+                <button type="button" onClick={() => setTermsModalOpen(true)} style={{ background: "none", border: "none", padding: 0, color: "inherit", cursor: "pointer", textAlign: "left", font: "inherit" }}>Reserve &amp; Platform Terms</button>
+                <Link href="/assessment">Contact</Link>
               </div>
             </div>
           </div>
@@ -455,6 +474,88 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {termsModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reserve-terms-title"
+          onClick={() => setTermsModalOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(12, 18, 17, 0.72)",
+            backdropFilter: "blur(4px)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px"
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fbfaf7",
+              color: "#14201f",
+              maxWidth: "680px",
+              width: "100%",
+              maxHeight: "85vh",
+              overflowY: "auto",
+              borderRadius: "18px",
+              padding: "32px",
+              border: "1px solid #ddd7ca",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.35)"
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
+              <div>
+                <div className="eyebrow" style={{ marginBottom: "6px" }}>Statutory &amp; Reserve Governance</div>
+                <h3 id="reserve-terms-title" className="serif" style={{ fontSize: "28px", margin: 0 }}>
+                  Community Protection Reserve &amp; Platform Terms
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTermsModalOpen(false)}
+                aria-label="Close terms"
+                style={{ background: "#eee9dd", border: "none", borderRadius: "999px", width: "34px", height: "34px", cursor: "pointer", fontWeight: 700 }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginTop: "20px", fontSize: "14px", lineHeight: 1.65, color: "#2d3a39", display: "grid", gap: "14px" }}>
+              <p style={{ margin: 0 }}>
+                <strong>1. Independent Design &amp; Procurement Role:</strong> Sunny State Quotes acts as an independent solar design, assessment, and commercial procurement clearinghouse. Your physical installation contract and statutory Electrical Safety Certificate (ESC) under the <em>Electricity (Licensing) Regulations 1991</em> (WA) are executed directly by the assigned CEC-accredited and WA-licensed electrical contractor.
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>2. Incidental Corporate Reserve (s 763E Corporations Act 2001):</strong> On participating builds, Sunny State Quotes allocates $650 AUD from its internal platform clearing fee into its balance-sheet Community Protection Reserve (provisioned under AASB 137). The Reserve is an incidental, discretionary corporate warranty support mechanism under s 763E of the <em>Corporations Act 2001</em> (Cth)—not a standalone contract of insurance, managed investment scheme, or statutory trust.
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>3. Three-Gate Orphaned Workmanship Eligibility:</strong> Reserve remediation is triggered where:
+                <br />• <strong>Gate 1 (Formal Installer Insolvency):</strong> The original installing electrical company has entered formal ASIC external administration/liquidation (Form 505) and ceased holding an active WA electrical contractor licence (solvent installers remain contractually bound to remediate defects within 14 days).
+                <br />• <strong>Gate 2 (Workmanship vs. OEM Hardware):</strong> The defect arises from orphaned installation workmanship that a secondary WA electrician cannot legally certify without system strip-and-replacement (pure hardware faults remain covered directly by the equipment manufacturer under s 271 of the Australian Consumer Law).
+                <br />• <strong>Gate 3 (Per-Property Cap &amp; Solvency Floor):</strong> Approved orphaned system replacements are capped at <strong>$17,000 AUD</strong> (wholesale replacement value benchmarked up to a 13.2kW PV, 10kW Inverter, and 20kWh Battery system) and are disbursed from available Reserve funds above the platform&apos;s $50,000 AUD Solvency Floor.
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>4. Australian Consumer Law Preservation:</strong> Nothing in these terms excludes, restricts, or modifies any statutory consumer guarantee, right, or remedy conferred by the Australian Consumer Law (Schedule 2 to the <em>Competition and Consumer Act 2010</em> (Cth)).
+              </p>
+            </div>
+
+            <div style={{ marginTop: "24px", display: "flex", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => setTermsModalOpen(false)}
+                className="btn btn-primary"
+                style={{ cursor: "pointer" }}
+              >
+                Understood
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
