@@ -1,0 +1,17 @@
+ARCHON VERIFY  2026-10-19T02:12:30.974Z  tier=fast  project=C:\Users\liam_\Documents\Antigravity\Antigravity Storage\GitHub\wa-solar-leads
+VERDICT: GREEN
+
+[WARN] typescript
+    tsconfig present but no local TypeScript installed; cannot type-check
+[PASS] js-syntax
+    5 files parse
+[PASS] security-scan
+    no hard violations found
+[WARN] hygiene-warnings
+    any-types: 8
+    innerHTML assignments: 0
+    src/app/tender/page.tsx:707 possible dead-end empty state (CMO Rule 3)
+[PASS] rules-budget
+    global: 5 shards (26615 B, max shard 10012/22000 B) | workspace: 2275/8000 B | total: 28890/60000 B
+
+LIMIT: catches common error classes; does not prove correctness.
