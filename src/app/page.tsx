@@ -26,7 +26,7 @@ export default function Home() {
             <a href="#philosophy">Why Us</a>
             <a href="#network">Installer Network</a>
             <a href="#finance">Finance</a>
-            <a href="#escrow">Escrow</a>
+            <a href="#escrow">Warranty Reserve</a>
           </nav>
 
           <div className="nav-cta">
@@ -121,8 +121,8 @@ export default function Home() {
 
               <div className="float-card card-escrow">
                 <span className="check">✓</span>
-                <strong>Escrow protection</strong>
-                <span>Funds are structured to support eligible warranty obligations.</span>
+                <strong>Reserve protection</strong>
+                <span>Dedicated warranty reserve supporting eligible workmanship obligations.</span>
               </div>
 
               <div className="float-card card-match">
@@ -155,8 +155,8 @@ export default function Home() {
             </div>
             <div className="process-step">
               <div className="process-num">04</div>
-              <h3>Escrow Reserve</h3>
-              <p>Backed by an internal platform reserve allocated to eligible builds at no extra cost.</p>
+              <h3>Protection Reserve</h3>
+              <p>Backed by an internal platform reserve allocated on every participating build.</p>
             </div>
             <div className="process-step">
               <div className="process-num">05</div>
@@ -166,26 +166,26 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Philosophy: No door knockers. Escrow-protected solar. */}
+        {/* Philosophy: No door knockers. Reserve-backed solar. */}
         <section id="philosophy" className="section">
           <div className="container">
             <div className="kicker-row">
               <div>
                 <div className="eyebrow">A better way to go solar</div>
-                <h2 className="serif">No door knockers.<br />Escrow-protected solar.</h2>
+                <h2 className="serif">No door knockers.<br />Reserve-backed solar.</h2>
               </div>
-              <p>Traditional solar companies inflate system prices to fund aggressive door knockers and high-pressure sales commissions. Our pricing architecture removes those commissions from the equation—allowing our in-house design consultants to deliver comfortable, accurate consultations, fair pricing, and Escrow-protected installs.</p>
+              <p>Traditional solar companies inflate system prices to fund aggressive door knockers and high-pressure field sales markups. Our centralized design-and-tender architecture eliminates door-knocker overheads—allowing our in-house design consultants to deliver comfortable, accurate consultations, fair pricing, and Reserve-backed installs.</p>
             </div>
             <div className="grid-3">
               <div className="card">
                 <div className="icon">⌂</div>
-                <h3>No Bloated Commissions</h3>
-                <p>By removing door knockers and aggressive sales-rep commissions from the equation, our pricing model keeps your solar installation fair, comfortable, and genuinely affordable.</p>
+                <h3>No Door-Knocker Markups</h3>
+                <p>By eliminating door knockers and high-pressure in-home sales teams, our centralized consultation model keeps your solar installation fair, comfortable, and transparent.</p>
               </div>
               <div className="card">
                 <div className="icon">⌗</div>
-                <h3>Escrow Reserve First</h3>
-                <p>Our Community Escrow Reserve is the core pillar of every build—allocating a dedicated orphaned-warranty reserve to eligible projects so you aren&apos;t left stranded if an original installer ever closes its doors.</p>
+                <h3>Protection Reserve First</h3>
+                <p>Our Community Protection Reserve is built into every project—allocating a dedicated orphaned-workmanship provision to eligible builds so you aren&apos;t left stranded if an original installer ever closes its doors.</p>
               </div>
               <div className="card">
                 <div className="icon">↗</div>
@@ -223,7 +223,7 @@ export default function Home() {
               <div className="flow-arrow">→</div>
               <div className="flow-box"><strong>SunnyEX</strong><span className="muted">qualified project tender.</span></div>
               <div className="flow-arrow">→</div>
-              <div className="flow-box"><strong>Escrow</strong><span className="muted">protection mechanism.</span></div>
+              <div className="flow-box"><strong>Reserve</strong><span className="muted">protection mechanism.</span></div>
             </div>
           </div>
         </section>
@@ -297,11 +297,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Community Escrow Reserve */}
+        {/* Community Protection Reserve */}
         <section id="escrow" className="section escrow">
           <div className="container escrow-box">
             <div>
-              <div className="eyebrow">Community escrow reserve</div>
+              <div className="eyebrow">Community protection reserve</div>
               <h2 className="serif" style={{ fontSize: "clamp(46px,5vw,70px)", lineHeight: 1.02, margin: "18px 0" }}>
                 Your installer can change.<br />
                 <span style={{ color: "var(--orange)" }}>Your protection shouldn&apos;t.</span>
@@ -316,7 +316,7 @@ export default function Home() {
                   onClick={() => setTermsModalOpen(true)}
                   style={{ background: "none", border: "none", padding: 0, color: "var(--orange)", textDecoration: "underline", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}
                 >
-                  View Reserve Terms
+                  View Reserve &amp; Privacy Terms
                 </button>
               </p>
               <Link className="btn btn-outline" href="/assessment" style={{ marginTop: "20px" }}>
@@ -326,7 +326,7 @@ export default function Home() {
 
             <div className="escrow-visual">
               <div className="escrow-ring">
-                <div><b>ESCROW</b><small>community reserve</small></div>
+                <div><b>RESERVE</b><small>community protection</small></div>
               </div>
               <div className="escrow-link"></div>
               <div className="escrow-link two"></div>
@@ -351,7 +351,7 @@ export default function Home() {
                 <div className="eyebrow">Finance without the sales trap</div>
                 <h2 className="serif">Choose how you pay.<br />Not which salesperson you get.</h2>
               </div>
-              <p>Keep the system design and project price independent from the finance option. Explore home-loan pathways or specialist finance only after the build is understood.</p>
+              <p>Keep the system design and cash build price transparent before selecting how to fund it. Explore home-loan pathways or specialist green finance with full fee visibility.</p>
             </div>
             <div className="grid-3">
               <div className="card finance-card">
@@ -373,7 +373,7 @@ export default function Home() {
                 <div className="rate">Specialist finance</div>
               </div>
             </div>
-            <p className="finance-note">Rates, eligibility and lender availability change over time. Finance is optional and separate from system design.</p>
+            <p className="finance-note">Rates, establishment fees, eligibility and lender availability vary by provider. Finance is optional and evaluated separately from system engineering.</p>
           </div>
         </section>
 
@@ -406,7 +406,7 @@ export default function Home() {
               <div className="card">
                 <div className="icon">04</div>
                 <h3>Protect</h3>
-                <p>Community escrow attached to eligible jobs.</p>
+                <p>Community protection reserve attached to eligible jobs.</p>
               </div>
             </div>
           </div>
@@ -449,7 +449,7 @@ export default function Home() {
                 <a href="#process">How It Works</a>
                 <a href="#philosophy">Why Us</a>
                 <a href="#network">Installer Network</a>
-                <a href="#escrow">Escrow</a>
+                <a href="#escrow">Warranty Reserve</a>
               </div>
             </div>
             <div>
@@ -510,9 +510,9 @@ export default function Home() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
               <div>
-                <div className="eyebrow" style={{ marginBottom: "6px" }}>Statutory &amp; Reserve Governance</div>
+                <div className="eyebrow" style={{ marginBottom: "6px" }}>Statutory, Reserve &amp; Privacy Governance</div>
                 <h3 id="reserve-terms-title" className="serif" style={{ fontSize: "28px", margin: 0 }}>
-                  Community Protection Reserve &amp; Platform Terms
+                  Community Protection Reserve &amp; Privacy Terms
                 </h3>
               </div>
               <button
@@ -530,16 +530,19 @@ export default function Home() {
                 <strong>1. Independent Design &amp; Procurement Role:</strong> Sunny State Quotes acts as an independent solar design, assessment, and commercial procurement clearinghouse. Your physical installation contract and statutory Electrical Safety Certificate (ESC) under the <em>Electricity (Licensing) Regulations 1991</em> (WA) are executed directly by the assigned CEC-accredited and WA-licensed electrical contractor.
               </p>
               <p style={{ margin: 0 }}>
-                <strong>2. Incidental Corporate Reserve (s 763E Corporations Act 2001):</strong> On participating builds, Sunny State Quotes allocates $650 AUD from its internal platform clearing fee into its balance-sheet Community Protection Reserve (provisioned under AASB 137). The Reserve is an incidental, discretionary corporate warranty support mechanism under s 763E of the <em>Corporations Act 2001</em> (Cth)—not a standalone contract of insurance, managed investment scheme, or statutory trust.
+                <strong>2. Incidental Corporate Reserve (s 763E Corporations Act 2001):</strong> On participating builds, Sunny State Quotes allocates $650 AUD from its platform clearing fee into its balance-sheet Community Protection Reserve (provisioned under AASB 137). The Reserve is an incidental corporate warranty support mechanism under s 763E of the <em>Corporations Act 2001</em> (Cth)—not a standalone contract of insurance, managed investment scheme, or statutory trust.
               </p>
               <p style={{ margin: 0 }}>
                 <strong>3. Three-Gate Orphaned Workmanship Eligibility:</strong> Reserve remediation is triggered where:
                 <br />• <strong>Gate 1 (Formal Installer Insolvency):</strong> The original installing electrical company has entered formal ASIC external administration/liquidation (Form 505) and ceased holding an active WA electrical contractor licence (solvent installers remain contractually bound to remediate defects within 14 days).
                 <br />• <strong>Gate 2 (Workmanship vs. OEM Hardware):</strong> The defect arises from orphaned installation workmanship that a secondary WA electrician cannot legally certify without system strip-and-replacement (pure hardware faults remain covered directly by the equipment manufacturer under s 271 of the Australian Consumer Law).
-                <br />• <strong>Gate 3 (Per-Property Cap &amp; Solvency Floor):</strong> Approved orphaned system replacements are capped at <strong>$17,000 AUD</strong> (wholesale replacement value benchmarked up to a 13.2kW PV, 10kW Inverter, and 20kWh Battery system) and are disbursed from available Reserve funds above the platform&apos;s $50,000 AUD Solvency Floor.
+                <br />• <strong>Gate 3 (Per-Property Replacement Cap):</strong> Approved orphaned system replacements are capped at <strong>$17,000 AUD</strong> (wholesale replacement value benchmarked up to a 13.2kW PV, 10kW Inverter, and 20kWh Battery system), disbursed from available Reserve liquidity.
               </p>
               <p style={{ margin: 0 }}>
                 <strong>4. Australian Consumer Law Preservation:</strong> Nothing in these terms excludes, restricts, or modifies any statutory consumer guarantee, right, or remedy conferred by the Australian Consumer Law (Schedule 2 to the <em>Competition and Consumer Act 2010</em> (Cth)).
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>5. Privacy &amp; Personal Information Notice (Privacy Act 1988 — APP 1 &amp; APP 5):</strong> We collect your name, property address, contact details, and energy bill profile solely to engineer your solar specification and match your approved project with a single assigned WA licensed electrical contractor. Your contact details are never sold to multi-bid lead brokers and remain redacted on our partner tender board until a single vetted electrical contractor accepts your work order. You may request access to, or correction/deletion of, your personal information at any time via our assessment portal.
               </p>
             </div>
 

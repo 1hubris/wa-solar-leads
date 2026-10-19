@@ -103,10 +103,21 @@ export default function Marketplace() {
   const [showWarrantyPoolModal, setShowWarrantyPoolModal] = useState(false);
   const [selectedPDFJob, setSelectedPDFJob] = useState<TenderJob | null>(null);
 
+  const [isPartnerVerified, setIsPartnerVerified] = useState(false);
+  const [partnerCodeInput, setPartnerCodeInput] = useState("");
+  const [partnerCodeError, setPartnerCodeError] = useState(false);
+
+  const getPartnerAuthHeader = () =>
+    partnerCodeInput.trim() || process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX";
+
   // Fetch live market data from API
   const fetchTenderData = async () => {
     try {
-      const res = await fetch("/api/tender");
+      const res = await fetch("/api/tender", {
+        headers: {
+          "x-sunny-auth": getPartnerAuthHeader(),
+        },
+      });
       const json = await res.json();
       if (json.success && json.data) {
         setLiveJobs(json.data.available || []);
@@ -121,10 +132,11 @@ export default function Marketplace() {
   };
 
   useEffect(() => {
+    if (!isPartnerVerified) return;
     fetchTenderData();
     const interval = setInterval(fetchTenderData, 8000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isPartnerVerified]);
 
   // Handle Contract Claiming
   const handleExecuteClaim = async () => {
@@ -135,7 +147,8 @@ export default function Marketplace() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Idempotency-Key": `claim-${selectedJobForClaim.id}`
+          "Idempotency-Key": `claim-${selectedJobForClaim.id}`,
+          "x-sunny-auth": getPartnerAuthHeader(),
         },
         body: JSON.stringify({
           action: "claim",
@@ -167,7 +180,8 @@ export default function Marketplace() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Idempotency-Key": `update-${jobId}-${status}`
+          "Idempotency-Key": `update-${jobId}-${status}`,
+          "x-sunny-auth": getPartnerAuthHeader(),
         },
         body: JSON.stringify({ action: "update_status", jobId, status }),
       });
@@ -187,7 +201,8 @@ export default function Marketplace() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Idempotency-Key": `var-${selectedJobForVariation.id}-${variationAmount}`
+          "Idempotency-Key": `var-${selectedJobForVariation.id}-${variationAmount}`,
+          "x-sunny-auth": getPartnerAuthHeader(),
         },
         body: JSON.stringify({
           action: "add_variation",
@@ -216,18 +231,29 @@ export default function Marketplace() {
     const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
     const randomTier = tiers[Math.floor(Math.random() * tiers.length)];
     const randomBatt = battSizes[Math.floor(Math.random() * battSizes.length)];
-    const payout = Math.round(2500 + randomSize * 250 + randomBatt * 200 + (randomTier === 3 ? 1500 : randomTier === 2 ? 800 : 0));
+    const pvRate = randomTier === 3 ? 650 : randomTier === 2 ? 500 : 400;
+    const battRate = randomTier === 3 ? 950 : randomTier === 2 ? 800 : 650;
+    const estHardwareCost = Math.round(randomSize * pvRate + randomBatt * battRate);
+    const estLaborCost = Math.round((randomSize > 0 ? 1200 + randomSize * 120 : 0) + (randomBatt > 0 ? 600 + randomBatt * 50 : 0));
+    const payout = Math.round(estHardwareCost + estLaborCost + 650);
 
     try {
       const res = await fetch("/api/tender", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": `sim-${crypto.randomUUID()}`,
+          "x-sunny-auth": getPartnerAuthHeader(),
+        },
         body: JSON.stringify({
           suburb: randomSuburb,
           pvSize: randomSize,
           hardwareTier: randomTier,
           batterySize: randomBatt,
           installerNetRevenue: payout,
+          estHardwareCost,
+          estLaborCost,
+          totalExtrasCost: 0,
           roof: "Colorbond Steel / Single Story",
           customerName: "New WA Homeowner (Signed)",
           customerAddress: `12 Sunshine Way, ${randomSuburb}`,
@@ -286,17 +312,12 @@ export default function Marketplace() {
     return a.timeRemaining.localeCompare(b.timeRemaining);
   });
 
-  // Prepare dummy QuoteData for Work Order PDF rendering
-  const [isPartnerVerified, setIsPartnerVerified] = useState(false);
-  const [partnerCodeInput, setPartnerCodeInput] = useState("");
-  const [partnerCodeError, setPartnerCodeError] = useState(false);
-
   const handlePartnerAuth = (e: React.FormEvent) => {
     e.preventDefault();
     const code = partnerCodeInput.trim().toUpperCase();
     const expectedAdmin = (process.env.NEXT_PUBLIC_ADMIN_PIN || "2026").toUpperCase();
     const expectedPartner = (process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX").toUpperCase();
-    if (code === expectedPartner || code === expectedAdmin || code === "EC-094") {
+    if (code === expectedPartner || code === expectedAdmin) {
       setIsPartnerVerified(true);
       setPartnerCodeError(false);
     } else {

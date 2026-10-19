@@ -93,7 +93,8 @@ export default function PricingCalculator() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Idempotency-Key": `publish-${crypto.randomUUID()}`
+          "Idempotency-Key": `publish-${crypto.randomUUID()}`,
+          "x-sunny-auth": adminPinInput.trim() || process.env.NEXT_PUBLIC_ADMIN_PIN || "2026"
         },
         body: JSON.stringify({
           suburb: "Perth Metro, WA",
@@ -103,6 +104,7 @@ export default function PricingCalculator() {
           installerNetRevenue,
           estHardwareCost,
           estLaborCost,
+          totalExtrasCost,
           activeExtras,
           roof: isTerracotta ? "Terracotta / Steep" : isDoubleStory ? "Colorbond / Double Story" : "Colorbond / Single Story",
           customerName: customerPII.name,
@@ -483,82 +485,84 @@ export default function PricingCalculator() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Settings className="w-5 h-5 text-slate-400" />
-                <h2 className="text-sm font-bold text-slate-700 uppercase tracking-widest">Cost-Plus Engine Tuning</h2>
+            {viewMode === "Admin" && (
+              <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Settings className="w-5 h-5 text-slate-400" />
+                  <h2 className="text-sm font-bold text-slate-700 uppercase tracking-widest">Cost-Plus Engine Tuning</h2>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  
+                  {/* 3-Tier Tuning */}
+                  <div className="col-span-2 border-slate-200 mt-1">
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase mb-2">Hardware Multipliers (Wholesale Costing)</h3>
+                  </div>
+                  
+                  <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                    <label className="block text-[10px] font-bold text-slate-600 mb-1">Tier 1 PV Rate ($/kW)</label>
+                    <input type="number" value={t1PvRate} onChange={(e) => setT1PvRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
+                  </div>
+                  <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                    <label className="block text-[10px] font-bold text-slate-600 mb-1">Tier 1 Batt Rate ($/kWh)</label>
+                    <input type="number" value={t1BattRate} onChange={(e) => setT1BattRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
+                  </div>
+                  
+                  <div className="bg-blue-50 p-2 rounded border border-blue-100">
+                    <label className="block text-[10px] font-bold text-blue-700 mb-1">Tier 2 PV Rate ($/kW)</label>
+                    <input type="number" value={t2PvRate} onChange={(e) => setT2PvRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
+                  </div>
+                  <div className="bg-blue-50 p-2 rounded border border-blue-100">
+                    <label className="block text-[10px] font-bold text-blue-700 mb-1">Tier 2 Batt Rate ($/kWh)</label>
+                    <input type="number" value={t2BattRate} onChange={(e) => setT2BattRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
+                  </div>
+
+                  <div className="bg-purple-50 p-2 rounded border border-purple-100">
+                    <label className="block text-[10px] font-bold text-purple-700 mb-1">Tier 3 PV Rate ($/kW)</label>
+                    <input type="number" value={t3PvRate} onChange={(e) => setT3PvRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
+                  </div>
+                  <div className="bg-purple-50 p-2 rounded border border-purple-100">
+                    <label className="block text-[10px] font-bold text-purple-700 mb-1">Tier 3 Batt Rate ($/kWh)</label>
+                    <input type="number" value={t3BattRate} onChange={(e) => setT3BattRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
+                  </div>
+
+                  <div className="col-span-2 border-t border-slate-200 pt-3 mt-1">
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">STC Trade Value ($)</label>
+                    <input type="number" value={stcValue} onChange={(e) => setStcValue(parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-500 text-sm outline-none" />
+                  </div>
+                </div>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                
-                {/* 3-Tier Tuning */}
-                <div className="col-span-2 border-slate-200 mt-1">
-                  <h3 className="text-[10px] font-bold text-slate-400 uppercase mb-2">Hardware Multipliers (Wholesale Costing)</h3>
-                </div>
-                
-                <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                  <label className="block text-[10px] font-bold text-slate-600 mb-1">Tier 1 PV Rate ($/kW)</label>
-                  <input type="number" value={t1PvRate} onChange={(e) => setT1PvRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
-                </div>
-                <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                  <label className="block text-[10px] font-bold text-slate-600 mb-1">Tier 1 Batt Rate ($/kWh)</label>
-                  <input type="number" value={t1BattRate} onChange={(e) => setT1BattRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
-                </div>
-                
-                <div className="bg-blue-50 p-2 rounded border border-blue-100">
-                  <label className="block text-[10px] font-bold text-blue-700 mb-1">Tier 2 PV Rate ($/kW)</label>
-                  <input type="number" value={t2PvRate} onChange={(e) => setT2PvRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
-                </div>
-                <div className="bg-blue-50 p-2 rounded border border-blue-100">
-                  <label className="block text-[10px] font-bold text-blue-700 mb-1">Tier 2 Batt Rate ($/kWh)</label>
-                  <input type="number" value={t2BattRate} onChange={(e) => setT2BattRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
-                </div>
+            )}
 
-                <div className="bg-purple-50 p-2 rounded border border-purple-100">
-                  <label className="block text-[10px] font-bold text-purple-700 mb-1">Tier 3 PV Rate ($/kW)</label>
-                  <input type="number" value={t3PvRate} onChange={(e) => setT3PvRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
-                </div>
-                <div className="bg-purple-50 p-2 rounded border border-purple-100">
-                  <label className="block text-[10px] font-bold text-purple-700 mb-1">Tier 3 Batt Rate ($/kWh)</label>
-                  <input type="number" value={t3BattRate} onChange={(e) => setT3BattRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
-                </div>
-
-                <div className="col-span-2 border-t border-slate-200 pt-3 mt-1">
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">STC Trade Value ($)</label>
-                  <input type="number" value={stcValue} onChange={(e) => setStcValue(parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-500 text-sm outline-none" />
-                </div>
-              </div>
-            </div>
-
-            {/* Payout Distribution (Moved and Scaled Down) */}
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 mt-6">
-              <h2 className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Payout Distribution</h2>
-              <div className="space-y-2 text-xs font-medium text-slate-300">
-                <div className="flex justify-between border-b border-slate-800 pb-2">
-                  <span>Lead Gen Marketing Fee</span>
-                  <span>${marketingFee.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-800 pb-2">
-                  <span>Lead Gen Overs (50%)</span>
-                  <span className="text-emerald-400">+${leadGenOvers.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-800 pb-2">
-                  <span>Consultant Base (4.0%)</span>
-                  <span>${baseCommission.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-800 pb-2">
-                  <span>Consultant At-Risk Overs</span>
-                  <span className="text-emerald-400">+${consultantOvers.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-800 pb-2 text-slate-400">
-                  <span>Installer Base Buffer</span>
-                  <span>${baseFee.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-800 pb-2 text-slate-400">
-                  <span>Installer Overs (20%)</span>
-                  <span className="text-emerald-400">+${installerOvers.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                </div>
-                {viewMode === "Admin" && (
+            {/* Payout Distribution (Admin Only) */}
+            {viewMode === "Admin" && (
+              <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 mt-6">
+                <h2 className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Payout Distribution</h2>
+                <div className="space-y-2 text-xs font-medium text-slate-300">
+                  <div className="flex justify-between border-b border-slate-800 pb-2">
+                    <span>Lead Gen Marketing Fee</span>
+                    <span>${marketingFee.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-800 pb-2">
+                    <span>Lead Gen Overs (50%)</span>
+                    <span className="text-emerald-400">+${leadGenOvers.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-800 pb-2">
+                    <span>Consultant Base (4.0%)</span>
+                    <span>${baseCommission.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-800 pb-2">
+                    <span>Consultant At-Risk Overs</span>
+                    <span className="text-emerald-400">+${consultantOvers.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-800 pb-2 text-slate-400">
+                    <span>Installer Base Buffer</span>
+                    <span>${baseFee.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-800 pb-2 text-slate-400">
+                    <span>Installer Overs (20%)</span>
+                    <span className="text-emerald-400">+${installerOvers.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
                   <div className="pt-2 space-y-2 mt-2">
                     <div className="flex justify-between text-white font-bold bg-blue-900/40 p-2 rounded border border-blue-800">
                       <span>Total Lead Gen Profit</span>
@@ -573,9 +577,9 @@ export default function PricingCalculator() {
                       <span className="text-purple-400">${estInstallerProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
 
@@ -681,26 +685,28 @@ export default function PricingCalculator() {
                   </button>
                 </div>
 
-                <button
-                  disabled={isPublishingTender}
-                  onClick={() => setShowFinalizationModal(true)}
-                  className={`w-full py-3 px-4 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-sm ${
-                    tenderPublishSuccess
-                      ? "bg-emerald-600 text-white"
-                      : "bg-slate-900 hover:bg-slate-850 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                  }`}
-                >
-                  {tenderPublishSuccess ? (
-                    <>
-                      <Check className="w-4 h-4 text-white" /> Broadcasted to SunnyEX Tender Order Book!
-                    </>
-                  ) : (
-                    <>
-                      <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-                      {isPublishingTender ? "Broadcasting to Marketplace..." : "Publish to SunnyEX Tender Order Book"}
-                    </>
-                  )}
-                </button>
+                {viewMode === "Admin" && (
+                  <button
+                    disabled={isPublishingTender}
+                    onClick={() => setShowFinalizationModal(true)}
+                    className={`w-full py-3 px-4 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-sm ${
+                      tenderPublishSuccess
+                        ? "bg-emerald-600 text-white"
+                        : "bg-slate-900 hover:bg-slate-850 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                    }`}
+                  >
+                    {tenderPublishSuccess ? (
+                      <>
+                        <Check className="w-4 h-4 text-white" /> Broadcasted to SunnyEX Tender Order Book!
+                      </>
+                    ) : (
+                      <>
+                        <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
+                        {isPublishingTender ? "Broadcasting to Marketplace..." : "Publish to SunnyEX Tender Order Book"}
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -878,7 +884,10 @@ export default function PricingCalculator() {
                 try {
                   const res = await fetch('/api/quote/email', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'x-sunny-auth': adminPinInput.trim() || process.env.NEXT_PUBLIC_ADMIN_PIN || '2026'
+                    },
                     body: JSON.stringify({ emailTo, quoteData })
                   });
                   if (!res.ok) throw new Error("Failed");

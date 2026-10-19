@@ -242,7 +242,7 @@ export function usePricingEngine() {
   // Installers are capacity fillers, Lead Gen holds the true value.
   const consultantOvers = Math.round(cappedOvers * 0.30);
   const leadGenOvers = Math.round(cappedOvers * 0.50);
-  const installerOvers = Math.round(cappedOvers * 0.20);
+  const installerOvers = Math.max(0, cappedOvers - leadGenOvers - consultantOvers);
 
   const totalConsultantPayout = baseCommission + consultantOvers;
   const totalLeadGenPayout = marketingFee + leadGenOvers;

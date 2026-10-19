@@ -112,8 +112,8 @@ export const CustomerQuoteTemplate = ({ data }: { data: QuoteData }) => {
 
           {data.vendorFeePct > 0 && (
             <div className="flex justify-between text-amber-300 border-t border-primary-800 pt-3">
-              <span>{data.financeVendor} Finance Vendor Fee</span>
-              <span>Fully Absorbed</span>
+              <span>{data.financeVendor} Finance Establishment / Dealer Fee ({(data.vendorFeePct * 100).toFixed(1)}%)</span>
+              <span>Included in Financed Total (${Math.round(data.actualVendorFeeAmount).toLocaleString()})</span>
             </div>
           )}
 
@@ -134,9 +134,9 @@ export const CustomerQuoteTemplate = ({ data }: { data: QuoteData }) => {
 
       {/* Disclaimer */}
       <div className="mt-8 pt-4 border-t-2 border-slate-200 text-[10px] text-slate-500 italic leading-relaxed">
-        <strong>Important Legal Notice:</strong> This document is a pricing estimate based on remote assessment and does not constitute a legally binding contract. Final pricing is strictly subject to a physical site inspection and structural/electrical engineering approval by the installing electrical company. All known site extras have been included. 
+        <strong>Important Legal Notice:</strong> This document is a pricing proposal based on remote assessment; binding installation execution occurs upon Customer Acceptance on Page 2 and physical site engineering verification by the assigned WA licensed electrical contractor. All known site extras have been itemised. 
         <br/><br/>
-        <strong>Liability Disclaimer:</strong> Sunny State Quotes operates strictly as a data acquisition and marketing broker. All installation contracts, warranties, and Australian Consumer Law obligations are held strictly by the licensed Electrical Contracting Company performing the installation. Sunny State Quotes accepts zero liability for installation defects, timeline delays, or STC/remedial compliance.
+        <strong>Statutory Consumer Guarantees (ACL s 64):</strong> Sunny State Quotes operates as an independent design and procurement clearinghouse. Physical installation contracts and workmanship warranties are executed by the assigned licensed Electrical Contracting Company. Nothing in this proposal excludes, restricts, or modifies any statutory consumer guarantee, right, or remedy conferred by the Australian Consumer Law.
       </div>
     </div>
   );
@@ -151,16 +151,16 @@ export const CustomerTermsTemplate = () => {
     <div id="customer-terms-pdf" className="bg-white p-10 w-[800px] text-slate-800" style={{ fontFamily: 'Inter, sans-serif' }}>
       <div className="border-b-4 border-slate-800 pb-4 mb-6">
         <h2 className="text-2xl font-black text-slate-900 tracking-tight">Terms & Conditions of Sale</h2>
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Legally Binding Contract - Please Read Carefully</p>
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Customer Acceptance &amp; Procurement Terms - Please Read Carefully</p>
       </div>
 
       <div className="grid grid-cols-2 gap-8 text-[10px] leading-relaxed text-justify">
         {/* Column 1 */}
         <div className="space-y-5">
           <div>
-            <h3 className="font-bold text-[11px] text-slate-900 uppercase mb-1">1. Contractual Parties & Brokerage</h3>
-            <p><strong>1.1 Role of Sunny State Quotes:</strong> Sunny State Quotes operates strictly as a data acquisition, quoting, and marketing brokerage service. Sunny State Quotes does NOT perform electrical contracting, engineering, or physical installation work.</p>
-            <p className="mt-2"><strong>1.2 Transfer of Liability:</strong> Upon acceptance of this quote, you enter into a direct installation contract with the assigned licensed Electrical Contracting Company ("The Installer"). All Australian Consumer Law (ACL) statutory warranties, workmanship warranties, equipment warranties, and obligations relating to STCs are the sole responsibility of the Installer. Sunny State Quotes is explicitly indemnified against property damage, defects, underperformance, or compliance failures.</p>
+            <h3 className="font-bold text-[11px] text-slate-900 uppercase mb-1">1. Contractual Parties &amp; Brokerage</h3>
+            <p><strong>1.1 Role of Sunny State Quotes:</strong> Sunny State Quotes operates as a solar design, assessment, and commercial procurement clearinghouse. Sunny State Quotes does NOT perform physical electrical contracting or roof installation work.</p>
+            <p className="mt-2"><strong>1.2 Principal Contractor &amp; ACL Preservation:</strong> Upon acceptance of this quote, you enter into a direct installation contract with the assigned licensed Electrical Contracting Company (&quot;The Installer&quot;), which is responsible for physical workmanship, equipment commissioning, and STC compliance. Nothing in these terms excludes, restricts, or modifies any non-excludable statutory guarantee or remedy under the Australian Consumer Law (ACL s 64).</p>
           </div>
 
           <div>
