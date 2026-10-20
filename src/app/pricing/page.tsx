@@ -12,7 +12,7 @@ export default function PricingCalculator() {
     pvSize, setPvSize, batterySize, setBatterySize, hardwareTier, setHardwareTier,
     viewMode, setViewMode, t1PvRate, setT1PvRate, t1BattRate, setT1BattRate,
     t2PvRate, setT2PvRate, t2BattRate, setT2BattRate, t3PvRate, setT3PvRate,
-    t3BattRate, setT3BattRate, stcValue, setStcValue, waRetailer, setWaRetailer,
+    t3BattRate, setT3BattRate, stcValue, setStcValue, batteryStcValue, setBatteryStcValue, biMonthlyBill, setBiMonthlyBill, waRetailer, setWaRetailer,
     financeVendor, setFinanceVendor, loanType, setLoanType, loanTerm, setLoanTerm,
     isDoubleStory, setIsDoubleStory, isTerracotta, setIsTerracotta,
     isSbUpgrade1Ph, setIsSbUpgrade1Ph, isSbUpgrade3Ph, setIsSbUpgrade3Ph,
@@ -31,7 +31,7 @@ export default function PricingCalculator() {
     rawOvers, cappedOvers, consultantOvers, leadGenOvers, installerOvers,
     totalConsultantPayout, totalLeadGenPayout, installerGrossCashIn,
     totalBrokerageClearing, upfrontCustomerDeposit, stcAndFinanceSplitDeduction,
-    installerNetRevenue, estInstallerProfit, quoteData, marketingFee, baseFee
+    installerNetRevenue, estInstallerProfit, annualBaselineBill, annualNewBill, annualSavingsYear1, monthlyBeforeBill, monthlyAfterBill, annualProductionKwh, summerDailyKwh, winterDailyKwh, selfConsumptionPct, selfPoweredPct, solarSharePct, batterySharePct, gridSharePct, discountedPaybackYears, irrPct, npv20Yr, netSavings20Yr, roiPct20Yr, quoteData, marketingFee, baseFee
   } = usePricingEngine();
 
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
@@ -273,6 +273,24 @@ export default function PricingCalculator() {
                   -moz-appearance: textfield;
                 }
               `}</style>
+
+              <div className="pt-4 border-t border-slate-100">
+                <label className="flex justify-between text-sm font-semibold text-slate-700 mb-2">
+                  <span>Customer Bi-Monthly Synergy Bill ($)</span>
+                  <div className="flex items-center">
+                    <span className="text-emerald-600 font-bold mr-0.5">$</span>
+                    <input 
+                      type="number" 
+                      value={biMonthlyBill} 
+                      onChange={(e) => setBiMonthlyBill(Math.max(0, parseFloat(e.target.value) || 0))} 
+                      className="w-20 text-right bg-transparent text-emerald-600 font-bold outline-none border-b border-emerald-200 focus:border-emerald-500 hide-arrows" 
+                      step="50"
+                    />
+                  </div>
+                </label>
+                <input type="range" min="200" max="3000" step="50" value={biMonthlyBill} onChange={(e) => setBiMonthlyBill(parseFloat(e.target.value))} className="w-full accent-emerald-600" />
+                <p className="text-[11px] text-slate-400 mt-1">Used for Pylon-calibrated Perth solar yield, self-consumption &amp; 20-year IRR/NPV simulation.</p>
+              </div>
 
               <div className="pt-4 border-t border-slate-100">
                 <label className="flex justify-between text-sm font-bold text-slate-900 mb-2">
@@ -526,9 +544,13 @@ export default function PricingCalculator() {
                     <input type="number" value={t3BattRate} onChange={(e) => setT3BattRate(parseFloat(e.target.value) || 0)} className="w-full px-2 py-1 rounded border border-slate-200 text-xs" />
                   </div>
 
-                  <div className="col-span-2 border-t border-slate-200 pt-3 mt-1">
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">STC Trade Value ($)</label>
+                  <div className="border-t border-slate-200 pt-3 mt-1">
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">PV STC Value ($)</label>
                     <input type="number" value={stcValue} onChange={(e) => setStcValue(parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-500 text-sm outline-none" />
+                  </div>
+                  <div className="border-t border-slate-200 pt-3 mt-1">
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Battery STC Value ($)</label>
+                    <input type="number" value={batteryStcValue} onChange={(e) => setBatteryStcValue(parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary-500 text-sm outline-none" />
                   </div>
                 </div>
               </div>
@@ -707,6 +729,68 @@ export default function PricingCalculator() {
                     )}
                   </button>
                 )}
+              </div>
+            </div>
+
+            {/* Pylon-Calibrated Perth Yield & Bill-Crusher ROI Card */}
+            <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Perth Yield &amp; 20-Yr ROI Telemetry</h2>
+                  <p className="text-[11px] text-slate-400">Calibrated to Pylon Australia/Perth Irradiance &amp; Synergy A1 Tariff</p>
+                </div>
+                <span className="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-2.5 py-1 rounded-full">
+                  {selfPoweredPct}% Self-Powered
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 mb-4 text-center">
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span className="block text-[10px] font-bold uppercase text-slate-400">Old Avg Monthly</span>
+                  <span className="block text-lg font-black text-slate-800 mt-0.5">${monthlyBeforeBill.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}/mo</span>
+                  <span className="block text-[10px] text-slate-400">${annualBaselineBill.toLocaleString(undefined, {maximumFractionDigits: 0})}/yr</span>
+                </div>
+                <div className="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200">
+                  <span className="block text-[10px] font-bold uppercase text-emerald-700">New Est. Monthly</span>
+                  <span className="block text-lg font-black text-emerald-600 mt-0.5">${monthlyAfterBill.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}/mo</span>
+                  <span className="block text-[10px] text-emerald-700">${annualNewBill.toLocaleString(undefined, {maximumFractionDigits: 0})}/yr</span>
+                </div>
+                <div className="bg-emerald-600 text-white p-3 rounded-xl shadow-sm">
+                  <span className="block text-[10px] font-bold uppercase text-emerald-100">Yr-1 Bill Savings</span>
+                  <span className="block text-lg font-black mt-0.5">${annualSavingsYear1.toLocaleString(undefined, {maximumFractionDigits: 0})}/yr</span>
+                  <span className="block text-[10px] text-emerald-100">{annualProductionKwh.toLocaleString()} kWh/yr</span>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <div className="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                  <span>Solar {solarSharePct}% • Battery {batterySharePct}% • Grid {gridSharePct}%</span>
+                  <span>{summerDailyKwh} kWh/d Summer • {winterDailyKwh} kWh/d Winter</span>
+                </div>
+                <div className="w-full h-2 rounded-full overflow-hidden flex bg-slate-200">
+                  <div style={{ width: `${solarSharePct}%` }} className="bg-amber-400 h-full" />
+                  <div style={{ width: `${batterySharePct}%` }} className="bg-emerald-500 h-full" />
+                  <div style={{ width: `${gridSharePct}%` }} className="bg-slate-400 h-full" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2 pt-3 border-t border-slate-100 text-center">
+                <div>
+                  <span className="block text-[10px] font-bold uppercase text-slate-400">Payback</span>
+                  <span className="block text-xs font-black text-slate-800">{discountedPaybackYears} Yrs</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] font-bold uppercase text-slate-400">Tax-Free IRR</span>
+                  <span className="block text-xs font-black text-emerald-600">{irrPct}%</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] font-bold uppercase text-slate-400">20-Yr NPV</span>
+                  <span className="block text-xs font-black text-slate-800">${npv20Yr.toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] font-bold uppercase text-slate-400">20-Yr Net</span>
+                  <span className="block text-xs font-black text-emerald-600">${netSavings20Yr.toLocaleString()}</span>
+                </div>
               </div>
             </div>
 
