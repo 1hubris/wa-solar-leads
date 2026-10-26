@@ -92,8 +92,8 @@ export async function GET(req: Request) {
       .filter((j) => j.status !== "Available")
       .map((j) => serializeJob(j, !isAuthedPartner));
 
-    const totalVolume = available.reduce((acc, j) => acc + j.payout, 0);
-    const totalClaimedVolume = claimed.reduce((acc, j) => acc + j.payout, 0);
+    const totalVolume = available.reduce((acc, j) => acc + Number(j.payout || 0), 0);
+    const totalClaimedVolume = claimed.reduce((acc, j) => acc + Number(j.payout || 0), 0);
     const warrantyReservePool = claimed.length * 650;
 
     return NextResponse.json({

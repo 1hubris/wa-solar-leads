@@ -67,9 +67,20 @@ export default function Funnel() {
       if (!res.ok) {
         throw new Error(resData.error || "Failed to submit assessment.");
       }
+      if (resData.lead && typeof window !== "undefined") {
+        try {
+          const existingRaw = window.localStorage.getItem("sunny_recent_leads_v1");
+          const existing = existingRaw ? JSON.parse(existingRaw) : [];
+          const updated = [resData.lead, ...existing.filter((l: { leadRef?: string }) => l.leadRef !== resData.lead.leadRef)].slice(0, 50);
+          window.localStorage.setItem("sunny_recent_leads_v1", JSON.stringify(updated));
+        } catch {
+          // Non-blocking local-first lead cache
+        }
+      }
       setIsSuccess(true);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong. Please check your details and try again.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong. Please check your details and try again.";
+      setError(msg);
       submitTimeoutRef.current = setTimeout(() => {
         setIsSubmitting(false);
       }, 2000);

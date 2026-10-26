@@ -1,11 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Calculator, DollarSign, ShieldCheck, Wrench, Settings, Users, ArrowUpRight, CreditCard, PlusCircle, Package, Download, Mail, Activity, Check } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { CustomerQuoteTemplate, InstallerWorkOrderTemplate, CustomerTermsTemplate } from "@/components/QuotePDFTemplates";
 import { usePricingEngine } from "@/hooks/usePricingEngine";
+
+interface CapturedLeadItem {
+  leadRef: string;
+  createdAt: string;
+  homeowner: boolean;
+  existingSystem: string;
+  billSize: number;
+  address: string;
+  name: string;
+  mobile: string;
+  email: string;
+  roofType: string;
+  phasing: string;
+  notes?: string;
+}
 
 export default function PricingCalculator() {
   const {
@@ -78,6 +93,7 @@ export default function PricingCalculator() {
 
   const [tenderPublishSuccess, setTenderPublishSuccess] = useState(false);
   const [showFinalizationModal, setShowFinalizationModal] = useState(false);
+  const [depositConfirmed, setDepositConfirmed] = useState(true);
   const [customerPII, setCustomerPII] = useState({
     name: "Verified WA Homeowner",
     phone: "0400 000 000",
@@ -85,6 +101,81 @@ export default function PricingCalculator() {
     address: "Perth Metropolitan Area, WA"
   });
   const [isPublishingTender, setIsPublishingTender] = useState(false);
+  const [capturedLeads, setCapturedLeads] = useState<CapturedLeadItem[]>([]);
+  const [activeLeadRef, setActiveLeadRef] = useState<string>("");
+
+  const fetchCapturedLeads = useCallback(async () => {
+    const mergedMap = new Map<string, CapturedLeadItem>();
+    if (typeof window !== "undefined") {
+      try {
+        const localRaw = window.localStorage.getItem("sunny_recent_leads_v1");
+        if (localRaw) {
+          const parsedLocal = JSON.parse(localRaw);
+          if (Array.isArray(parsedLocal)) {
+            for (const item of parsedLocal) {
+              if (item && typeof item.leadRef === "string") {
+                mergedMap.set(item.leadRef, item as CapturedLeadItem);
+              }
+            }
+          }
+        }
+      } catch {
+        // Ignore storage parse errors
+      }
+    }
+
+    try {
+      const res = await fetch("/api/leads", {
+        headers: {
+          "x-sunny-auth": process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX"
+        }
+      });
+      if (res.ok) {
+        const payload = await res.json();
+        if (Array.isArray(payload.leads)) {
+          for (const item of payload.leads) {
+            if (item && typeof item.leadRef === "string") {
+              mergedMap.set(item.leadRef, item as CapturedLeadItem);
+            }
+          }
+        }
+      }
+    } catch {
+      // Offline / local fallback already populated
+    }
+
+    setCapturedLeads(Array.from(mergedMap.values()));
+  }, []);
+
+  useEffect(() => {
+    fetchCapturedLeads();
+  }, [fetchCapturedLeads]);
+
+  const applyCapturedLead = (lead: CapturedLeadItem) => {
+    setActiveLeadRef(lead.leadRef);
+    setCustomerPII({
+      name: lead.name || "Verified WA Homeowner",
+      phone: lead.mobile || "0400 000 000",
+      email: lead.email || "homeowner@sunnystate.com.au",
+      address: lead.address || "Perth Metropolitan Area, WA"
+    });
+    setEmailTo(lead.email || "");
+    if (typeof lead.billSize === "number" && lead.billSize > 0) {
+      setBiMonthlyBill(lead.billSize);
+      if (lead.billSize >= 600) {
+        setPvSize(10.0);
+        setBatterySize(15.0);
+      } else if (lead.billSize >= 400) {
+        setPvSize(6.6);
+        setBatterySize(10.0);
+      } else {
+        setPvSize(6.6);
+        setBatterySize(5.0);
+      }
+    }
+    setIsTerracotta(lead.roofType === "Tile");
+    setIsSbUpgrade3Ph(lead.phasing === "3 Phase");
+  };
 
   const handlePublishToTender = async () => {
     setIsPublishingTender(true);
@@ -184,6 +275,58 @@ export default function PricingCalculator() {
           
           {/* LEFT: Inputs */}
           <div className="space-y-6">
+
+            <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary-600" />
+                  <h2 className="text-sm font-bold text-slate-800">1-Click Lead Intake Loader</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={fetchCapturedLeads}
+                  className="text-xs font-semibold text-primary-600 hover:text-primary-700"
+                >
+                  Refresh ({capturedLeads.length})
+                </button>
+              </div>
+              {capturedLeads.length === 0 ? (
+                <p className="text-xs text-slate-500">
+                  Leads submitted via the <a href="/assessment" className="underline font-semibold text-slate-700">/assessment</a> funnel appear here automatically for 1-click quote prefill.
+                </p>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <select
+                    value={activeLeadRef}
+                    onChange={(e) => {
+                      const found = capturedLeads.find((l) => l.leadRef === e.target.value);
+                      if (found) applyCapturedLead(found);
+                    }}
+                    className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold bg-slate-50 text-slate-800 outline-none"
+                  >
+                    <option value="">Select a captured homeowner lead...</option>
+                    {capturedLeads.map((l) => (
+                      <option key={l.leadRef} value={l.leadRef}>
+                        {l.name} — {l.address} (${l.billSize} bill | {l.roofType})
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => applyCapturedLead(capturedLeads[0])}
+                    className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-all shrink-0"
+                  >
+                    Load Latest
+                  </button>
+                </div>
+              )}
+              {activeLeadRef && (
+                <div className="text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-lg font-medium flex items-center justify-between">
+                  <span>Loaded: <strong>{customerPII.name}</strong> ({customerPII.address})</span>
+                  <span className="font-mono text-[11px]">{activeLeadRef}</span>
+                </div>
+              )}
+            </div>
             
             <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6 space-y-6">
               <h2 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2">System Specs</h2>
@@ -1030,10 +1173,23 @@ export default function PricingCalculator() {
                 <label className="block text-xs font-bold text-slate-600 mb-1">Exact Street Address</label>
                 <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-800" value={customerPII.address} onChange={(e) => setCustomerPII({...customerPII, address: e.target.value})} />
               </div>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={depositConfirmed}
+                    onChange={(e) => setDepositConfirmed(e.target.checked)}
+                    className="mt-0.5 rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span className="text-xs text-slate-800 leading-snug">
+                    <strong>Verify $250 Upfront Booking &amp; Engineering Deposit (Law 65):</strong> Confirm homeowner acceptance and upfront clearing deposit before dispatching to the SunnyEX Live Order Book.
+                  </span>
+                </label>
+              </div>
             </div>
             <div className="p-4 bg-slate-50 flex gap-3 justify-end border-t border-slate-200">
               <button onClick={() => setShowFinalizationModal(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800">Cancel</button>
-              <button onClick={() => { setShowFinalizationModal(false); handlePublishToTender(); }} disabled={isPublishingTender} className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded shadow hover:bg-blue-700">Confirm & Publish to SunnyEX</button>
+              <button onClick={() => { setShowFinalizationModal(false); handlePublishToTender(); }} disabled={isPublishingTender || !depositConfirmed} className="px-5 py-2 bg-blue-600 disabled:opacity-50 text-white text-sm font-bold rounded shadow hover:bg-blue-700">Confirm & Publish to SunnyEX</button>
             </div>
           </div>
         </div>

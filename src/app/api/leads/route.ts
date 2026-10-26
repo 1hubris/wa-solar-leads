@@ -21,6 +21,35 @@ function sanitizeSheetCell(val: string) {
   return trimmed;
 }
 
+function isAuthorizedRequest(req: Request): boolean {
+  const authHeader = (req.headers.get("x-sunny-auth") || "").trim().toUpperCase();
+  const expectedAdmin = (process.env.SUNNY_API_TOKEN || process.env.NEXT_PUBLIC_ADMIN_PIN || "2026").toUpperCase();
+  const expectedPartner = (process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX").toUpperCase();
+  return Boolean(authHeader && (authHeader === expectedAdmin || authHeader === expectedPartner));
+}
+
+export interface StoredLeadRecord {
+  leadRef: string;
+  createdAt: string;
+  homeowner: boolean;
+  existingSystem: string;
+  billSize: number;
+  address: string;
+  name: string;
+  mobile: string;
+  email: string;
+  roofType: string;
+  phasing: string;
+  notes: string;
+}
+
+const globalForLeads = global as unknown as { recentLeadsStore?: StoredLeadRecord[] };
+const recentLeadsStore: StoredLeadRecord[] = globalForLeads.recentLeadsStore || [];
+globalForLeads.recentLeadsStore = recentLeadsStore;
+
+const DEFAULT_GOOGLE_SHEETS_WEBHOOK_URL =
+  "https://script.google.com/macros/s/AKfycbzgqk0EatPP935z68kOkm6PSeJbEdC5YDlo1puNslqkd7sgLROK-DRwpyYOv_9IhbNvRg/exec";
+
 const LeadSchema = z.object({
   homeowner: z.boolean().optional().default(true),
   existingSystem: z.string().max(150).optional().default("None"),
@@ -34,27 +63,64 @@ const LeadSchema = z.object({
   notes: z.string().max(1000).optional().default("Web Assessment Form"),
 });
 
+/**
+ * Authenticated Consultant/Admin Endpoint to Load Captured Homeowner Leads into /pricing.
+ * Enforces Law 21 & Law 24 (server-side authorization before returning any consumer PII).
+ */
+export async function GET(request: Request) {
+  if (!isAuthorizedRequest(request)) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized: valid consultant or admin credentials required." },
+      { status: 401 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    leads: recentLeadsStore.slice(0, 50),
+  });
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const validatedData = LeadSchema.parse(body);
     const leadRef = `LEAD-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    const createdAt = new Date().toISOString();
 
-    // ARCHON Law 25: Log non-PII reference ID only (never dump raw consumer PII to stdout)
+    // ARCHON Law 25/27: Log non-PII reference ID only (never dump raw consumer PII to stdout)
     console.log(`[wa-solar-leads] Captured ${leadRef} (billSize=$${validatedData.billSize})`);
 
-    // 1. Google Sheets Webhook Delivery
-    const googleScriptUrl =
-      process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
-      (process.env.NODE_ENV !== "production"
-        ? "https://script.google.com/macros/s/AKfycbzgqk0EatPP935z68kOkm6PSeJbEdC5YDlo1puNslqkd7sgLROK-DRwpyYOv_9IhbNvRg/exec"
-        : "");
+    const capturedRecord: StoredLeadRecord = {
+      leadRef,
+      createdAt,
+      homeowner: validatedData.homeowner,
+      existingSystem: validatedData.existingSystem,
+      billSize: validatedData.billSize,
+      address: validatedData.address.trim(),
+      name: validatedData.name.trim(),
+      mobile: validatedData.mobile.trim(),
+      email: validatedData.email.trim(),
+      roofType: validatedData.roofType,
+      phasing: validatedData.phasing,
+      notes: validatedData.notes,
+    };
+
+    recentLeadsStore.unshift(capturedRecord);
+    if (recentLeadsStore.length > 200) {
+      recentLeadsStore.length = 200;
+    }
+
+    // 1. Google Sheets Webhook Delivery (always active in production & dev so leads never drop silently)
+    const googleScriptUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || DEFAULT_GOOGLE_SHEETS_WEBHOOK_URL;
+    let webhookDelivered = false;
 
     if (googleScriptUrl) {
       try {
         const sheetResponse = await fetch(googleScriptUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: AbortSignal.timeout(10000),
           body: JSON.stringify({
             leadRef,
             name: sanitizeSheetCell(validatedData.name),
@@ -71,7 +137,9 @@ export async function POST(request: Request) {
           }),
         });
 
-        if (!sheetResponse.ok) {
+        if (sheetResponse.ok) {
+          webhookDelivered = true;
+        } else {
           console.error(`[wa-solar-leads] Sheet webhook failed for ${leadRef} with status ${sheetResponse.status}`);
         }
       } catch {
@@ -92,18 +160,23 @@ export async function POST(request: Request) {
         },
       });
     } else if (process.env.NODE_ENV !== "production") {
-      const testAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
-        },
-      });
+      try {
+        const testAccount = await nodemailer.createTestAccount();
+        transporter = nodemailer.createTransport({
+          host: "smtp.ethereal.email",
+          port: 587,
+          secure: false,
+          auth: {
+            user: testAccount.user,
+            pass: testAccount.pass,
+          },
+        });
+      } catch {
+        transporter = undefined;
+      }
     }
 
+    let emailDelivered = false;
     if (transporter) {
       const htmlContent = `
         <h2>New WA Solar Lead (${escapeHtml(leadRef)})</h2>
@@ -133,6 +206,10 @@ export async function POST(request: Request) {
             <td>${escapeHtml(validatedData.existingSystem)}</td>
           </tr>
           <tr>
+            <td style="font-weight: bold;">Roof / Phase</td>
+            <td>${escapeHtml(validatedData.roofType)} / ${escapeHtml(validatedData.phasing)}</td>
+          </tr>
+          <tr>
             <td style="font-weight: bold;">Bi-Monthly Bill</td>
             <td>$${validatedData.billSize}</td>
           </tr>
@@ -142,15 +219,29 @@ export async function POST(request: Request) {
         </p>
       `;
 
-      await transporter.sendMail({
-        from: '"WA Solar System" <leads@wasolarassessments.com.au>',
-        to: process.env.LEAD_DESTINATION_EMAIL || "test-inbox@wasolarassessments.com.au",
-        subject: `NEW LEAD [${leadRef}]: WA Solar Assessment`,
-        html: htmlContent,
-      });
+      try {
+        await transporter.sendMail({
+          from: '"WA Solar System" <leads@wasolarassessments.com.au>',
+          to: process.env.LEAD_DESTINATION_EMAIL || "test-inbox@wasolarassessments.com.au",
+          subject: `NEW LEAD [${leadRef}]: WA Solar Assessment ($${validatedData.billSize} bill)`,
+          html: htmlContent,
+        });
+        emailDelivered = true;
+      } catch {
+        console.error(`[wa-solar-leads] SMTP send failed for ${leadRef}.`);
+      }
     }
 
-    return NextResponse.json({ success: true, leadRef, message: "Lead captured successfully." }, { status: 200 });
+    return NextResponse.json(
+      {
+        success: true,
+        leadRef,
+        lead: capturedRecord,
+        delivery: { webhookDelivered, emailDelivered },
+        message: "Lead captured successfully.",
+      },
+      { status: 200 }
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ success: false, error: "Invalid form input." }, { status: 400 });

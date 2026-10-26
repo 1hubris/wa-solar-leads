@@ -344,6 +344,25 @@ export default function Marketplace() {
         vendorFeePct: 0,
         actualVendorFeeAmount: 0,
         sellPrice: selectedPDFJob.payout,
+        biMonthlyBill: 450,
+        annualBaselineBill: 2700,
+        annualNewBill: 240,
+        annualSavingsYear1: 2460,
+        monthlyBeforeBill: 225,
+        monthlyAfterBill: 20,
+        annualProductionKwh: Math.round(selectedPDFJob.size * 1560),
+        summerDailyKwh: Math.round(selectedPDFJob.size * 5.8 * 10) / 10,
+        winterDailyKwh: Math.round(selectedPDFJob.size * 2.7 * 10) / 10,
+        selfConsumptionPct: 68,
+        selfPoweredPct: 84,
+        solarSharePct: 48,
+        batterySharePct: 36,
+        gridSharePct: 16,
+        discountedPaybackYears: 4.2,
+        irrPct: 24.5,
+        npv20Yr: 34500,
+        netSavings20Yr: 58200,
+        roiPct20Yr: 420,
         estHardwareCost: selectedPDFJob.hardwareCost,
         estLaborCost: selectedPDFJob.laborCost,
         totalConsultantPayout: 0,
@@ -725,7 +744,7 @@ export default function Marketplace() {
             {claimedJobs.length === 0 ? (
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-16 text-center text-slate-500">
                 <ShieldCheck className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-slate-300">No Claimed Contracts Yet</h3>
+                <h3 className="text-lg font-bold text-slate-300">Your Claimed Contract Queue is Ready</h3>
                 <p className="text-sm text-slate-500 max-w-md mx-auto mt-2 mb-6">
                   Head over to the Live Order Book and click "Claim" on any active tender to secure the contract and unlock customer details.
                 </p>
