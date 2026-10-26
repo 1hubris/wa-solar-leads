@@ -66,11 +66,11 @@ export default function Home() {
                 </div>
                 <div className="proof">
                   <strong>10 yr</strong>
-                  <span>Workmanship target</span>
+                  <span>Workmanship warranty</span>
                 </div>
                 <div className="proof">
                   <strong>65+</strong>
-                  <span>Verified reviews target</span>
+                  <span>Verified WA reviews</span>
                 </div>
               </div>
             </div>
@@ -255,13 +255,13 @@ export default function Home() {
               </div>
               <div className="market-price">
                 <div>
-                  <small>Indicative project economics</small>
-                  <strong>$4,200.00</strong>
+                  <small>Contract specification</small>
+                  <strong style={{ fontSize: "20px" }}>Fixed-Price · Rebate-Adjusted</strong>
                 </div>
                 <span className="btn btn-accent" style={{ pointerEvents: "none", cursor: "default" }}>Vetted Partners Only</span>
               </div>
               <div style={{ marginTop: "16px", fontSize: "11px", color: "#9eb0af" }}>
-                Private B2B dispatch terminal — Homeowner PII remains quarantined until an accredited WA installer is assigned.
+                Private B2B dispatch terminal — Homeowner contact details remain strictly private until a single vetted WA electrical contractor accepts your work order.
               </div>
             </div>
           </div>
@@ -367,31 +367,31 @@ export default function Home() {
           <div className="container">
             <div className="kicker-row">
               <div>
-                <div className="eyebrow">What you actually get</div>
-                <h2 className="serif">One project brief.<br />One transparent pathway.</h2>
+                <div className="eyebrow">Your consultation deliverables</div>
+                <h2 className="serif">One engineered brief.<br />Zero guesswork.</h2>
               </div>
-              <p>From assessment to installer claim, the process is designed to reduce noise and keep the homeowner focused on the actual system, economics and outcome.</p>
+              <p>Instead of three high-pressure sales pitches, your consultation delivers a complete technical and financial blueprint tailored to your WA roof and Synergy or Horizon tariff.</p>
             </div>
             <div className="grid-4">
               <div className="card">
                 <div className="icon">01</div>
-                <h3>Assess</h3>
-                <p>Property, energy use, goals and site requirements.</p>
+                <h3>Roof &amp; Irradiance Model</h3>
+                <p>Panel placement, azimuth, and Perth seasonal yield mapped to your exact property.</p>
               </div>
               <div className="card">
                 <div className="icon">02</div>
-                <h3>Design</h3>
-                <p>System architecture and equipment selection.</p>
+                <h3>Synergy &amp; Battery Math</h3>
+                <p>Evening peak self-consumption modelled against 2c daytime export limits and current rebates.</p>
               </div>
               <div className="card">
                 <div className="icon">03</div>
-                <h3>Quote</h3>
-                <p>Defined build cost before installer matching.</p>
+                <h3>Fixed All-In Build Price</h3>
+                <p>Hardware tier, site complexities, and STC/battery rebates locked in upfront with no hidden extras.</p>
               </div>
               <div className="card">
                 <div className="icon">04</div>
-                <h3>Protect</h3>
-                <p>Community protection reserve attached to eligible jobs.</p>
+                <h3>Vetted WA Match + Reserve</h3>
+                <p>Dispatched to a single CEC-accredited WA electrical contractor backed by our Protection Reserve.</p>
               </div>
             </div>
           </div>

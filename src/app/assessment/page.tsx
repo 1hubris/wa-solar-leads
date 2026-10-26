@@ -42,10 +42,10 @@ export default function AssessmentPage() {
 
               <div className="bg-[#173335] text-white rounded-2xl p-6 sm:p-8 shadow-xl">
                 <h3 className="font-serif text-xl sm:text-2xl font-bold mb-3">
-                  Your information is part of the project brief.
+                  Your information builds your engineering brief.
                 </h3>
                 <p className="text-xs sm:text-sm text-[#c7d2d1] leading-relaxed mb-6">
-                  Capture the minimum useful information first, then ask for more detail only when the job needs it.
+                  In under 60 seconds, we capture the essential property and tariff details needed to model your roof layout, rebate eligibility, and fixed build price—without sending salespeople to your door.
                 </p>
 
                 <div className="space-y-3 text-xs sm:text-sm">
@@ -55,7 +55,7 @@ export default function AssessmentPage() {
                   </div>
                   <div className="flex items-center gap-2.5">
                     <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">✓</span>
-                    <span>Bi-monthly bill + tariff structure</span>
+                    <span>Bi-monthly bill + Synergy/Horizon tariff</span>
                   </div>
                   <div className="flex items-center gap-2.5">
                     <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">✓</span>
@@ -63,7 +63,7 @@ export default function AssessmentPage() {
                   </div>
                   <div className="flex items-center gap-2.5">
                     <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">✓</span>
-                    <span>Encrypted contact details (Quarantined)</span>
+                    <span>100% private — never sold to multi-quote lead brokers</span>
                   </div>
                 </div>
               </div>

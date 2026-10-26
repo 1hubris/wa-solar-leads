@@ -34,6 +34,7 @@ export default function Funnel() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showRenterNotice, setShowRenterNotice] = useState(false);
   const [error, setError] = useState("");
   const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -97,31 +98,68 @@ export default function Funnel() {
   };
 
   if (isSuccess) {
+    const recommendedPv = data.billSize >= 600 ? "10.0kW – 13.2kW" : "6.6kW";
+    const recommendedBatt = data.billSize >= 600 ? "15.0kWh" : data.billSize >= 350 ? "10.0kWh" : "5.0kWh – 10.0kWh";
+    const estBillReduction = data.billSize >= 600 ? "80% – 92%" : "75% – 88%";
+
     return (
       <div className="text-left py-8 px-6 sm:px-8 bg-white border border-[#ddd7ca] rounded-2xl shadow-xl">
         <div className="w-12 h-12 bg-[#1f6e58] text-white rounded-full flex items-center justify-center mb-5 text-xl font-bold shadow-md shadow-[#1f6e58]/20">
           <Check className="w-6 h-6 stroke-[3]" />
         </div>
-        <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#102022] mb-3 leading-tight">
-          Thank you for your submission.
+        <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#102022] mb-2 leading-tight">
+          Your WA Project Brief Is Logged.
         </h2>
-        <p className="text-[#667376] text-base leading-relaxed mb-6 font-medium">
-          A specialised design consultant will assist you in becoming a part of the Sunny State community.
+        <p className="text-[#667376] text-sm sm:text-base leading-relaxed mb-5 font-medium">
+          A specialised Sunny State design consultant is preparing your roof irradiance layout and fixed-price build brief for <strong>{data.address || "your property"}</strong>.
         </p>
-        <div className="bg-[#fbfaf7] border-l-4 border-[#df6f24] border-y border-r border-[#ddd7ca] rounded-xl p-4 sm:p-5 mb-6">
-          <span className="text-xs uppercase tracking-wider font-extrabold text-[#df6f24] block mb-1">
-            Project Intake Confirmed
+
+        {/* Instant Variable Reward: Preliminary System Architecture */}
+        <div className="bg-[#102022] text-white rounded-xl p-4 sm:p-5 mb-5">
+          <span className="text-[11px] uppercase tracking-wider font-extrabold text-[#df6f24] block mb-2">
+            Preliminary Engineering Baseline ({data.roofType} · {data.phasing})
           </span>
-          <p className="text-xs text-[#667376] leading-relaxed">
-            Your property and energy profile have been recorded. Our team will review your roof orientation, shading, and tariff structure to build your transparent project tender.
-          </p>
+          <div className="grid grid-cols-3 gap-3 text-center pt-1">
+            <div className="bg-white/5 rounded-lg p-2.5 border border-white/10">
+              <span className="block text-[10px] uppercase text-[#9eb0af]">Target Solar PV</span>
+              <strong className="text-sm sm:text-base font-bold text-white">{recommendedPv}</strong>
+            </div>
+            <div className="bg-white/5 rounded-lg p-2.5 border border-white/10">
+              <span className="block text-[10px] uppercase text-[#9eb0af]">Hybrid Storage</span>
+              <strong className="text-sm sm:text-base font-bold text-white">{recommendedBatt}</strong>
+            </div>
+            <div className="bg-white/5 rounded-lg p-2.5 border border-white/10">
+              <span className="block text-[10px] uppercase text-[#9eb0af]">Est. Bill Offset</span>
+              <strong className="text-sm sm:text-base font-bold text-emerald-400">{estBillReduction}</strong>
+            </div>
+          </div>
         </div>
-        <button
-          onClick={() => { setIsSuccess(false); setStep(1); }}
+
+        {/* Zeigarnik Progress Checklist */}
+        <div className="bg-[#fbfaf7] border-l-4 border-[#df6f24] border-y border-r border-[#ddd7ca] rounded-xl p-4 sm:p-5 mb-6 space-y-2 text-xs">
+          <div className="font-extrabold uppercase tracking-wider text-[#df6f24] mb-1">
+            Next Steps Before Your Consultation
+          </div>
+          <div className="flex items-center gap-2 text-[#1f6e58] font-semibold">
+            <span>✓</span>
+            <span>1. Property, roof material &amp; electrical phasing recorded</span>
+          </div>
+          <div className="flex items-center gap-2 text-[#1f6e58] font-semibold">
+            <span>✓</span>
+            <span>2. Preliminary WA solar &amp; battery baseline calculated</span>
+          </div>
+          <div className="flex items-center gap-2 text-[#102022] font-bold">
+            <span className="text-[#df6f24]">→</span>
+            <span>3. Have a recent Synergy or Horizon bill handy so we can verify your exact meter &amp; rebate tier</span>
+          </div>
+        </div>
+
+        <a
+          href="/"
           className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#102022] hover:bg-[#172022] text-white font-bold text-sm transition-all shadow-md"
         >
-          Submit Another Assessment
-        </button>
+          ← Return to Sunny State Overview
+        </a>
       </div>
     );
   }
@@ -137,15 +175,22 @@ export default function Funnel() {
       </div>
 
       <div className="p-6 md:p-8 min-h-[420px] flex flex-col">
-        {step > 1 && (
-          <button 
-            onClick={prevStep}
-            className="flex items-center text-[#667376] hover:text-[#102022] text-sm font-medium mb-4 transition-colors w-fit"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Back
-          </button>
-        )}
+        <div className="flex items-center justify-between mb-4">
+          {step > 1 ? (
+            <button 
+              onClick={prevStep}
+              className="flex items-center text-[#667376] hover:text-[#102022] text-sm font-medium transition-colors w-fit"
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back
+            </button>
+          ) : (
+            <span className="text-xs font-semibold text-[#667376]">Takes ~45 seconds</span>
+          )}
+          <span className="text-xs font-bold uppercase tracking-wider text-[#df6f24]">
+            Step {step} of 5
+          </span>
+        </div>
 
         <AnimatePresence mode="wait">
           {/* STEP 1: Homeownership */}
@@ -157,14 +202,14 @@ export default function Funnel() {
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-center text-[#102022] mb-2">
                 Do you own your home in WA?
               </h2>
-              <p className="text-center text-[#667376] text-sm mb-6">This assessment is currently for homeowners.</p>
+              <p className="text-center text-[#667376] text-sm mb-6">Western Power grid applications and roof installations require property owner approval.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 <button
                   type="button"
-                  onClick={() => { updateData({ homeowner: true }); nextStep(); }}
+                  onClick={() => { setShowRenterNotice(false); updateData({ homeowner: true }); nextStep(); }}
                   className={`p-4 rounded-xl border text-left transition-all ${
-                    data.homeowner === true
+                    data.homeowner === true && !showRenterNotice
                       ? "border-[#df6f24] bg-[#fff7f0] ring-2 ring-[#df6f24]/20"
                       : "border-[#ddd7ca] bg-white hover:border-[#df6f24]"
                   }`}
@@ -175,17 +220,41 @@ export default function Funnel() {
 
                 <button
                   type="button"
-                  onClick={() => { updateData({ homeowner: false }); nextStep(); }}
+                  onClick={() => { updateData({ homeowner: false }); setShowRenterNotice(true); }}
                   className={`p-4 rounded-xl border text-left transition-all ${
-                    data.homeowner === false
+                    showRenterNotice
                       ? "border-[#df6f24] bg-[#fff7f0] ring-2 ring-[#df6f24]/20"
                       : "border-[#ddd7ca] bg-white hover:border-[#df6f24]"
                   }`}
                 >
                   <strong className="block text-[#102022] text-sm font-bold">No, I rent</strong>
-                  <span className="text-xs text-[#667376]">Explore renter pathways</span>
+                  <span className="text-xs text-[#667376]">See landlord authorization requirements</span>
                 </button>
               </div>
+
+              {showRenterNotice && (
+                <div className="bg-[#fbfaf7] border border-[#ddd7ca] rounded-xl p-4 text-xs text-[#4f5c5f] space-y-3">
+                  <p className="leading-relaxed">
+                    <strong>Property Owner Authorization Required:</strong> Because solar and battery installations involve structural roof attachments and Western Power meter/inverter approval, only the property owner (or an authorised property manager acting on their behalf) can approve a quote.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { setShowRenterNotice(false); updateData({ homeowner: true, notes: "Inquiring with landlord / property owner authorization" }); nextStep(); }}
+                      className="px-3.5 py-2 rounded-lg bg-[#102022] text-white font-bold text-xs hover:bg-[#172022] transition-all"
+                    >
+                      I Have Landlord Authorization → Continue
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowRenterNotice(false); updateData({ homeowner: true }); nextStep(); }}
+                      className="px-3.5 py-2 rounded-lg border border-[#ddd7ca] bg-white text-[#102022] font-semibold text-xs hover:border-[#df6f24] transition-all"
+                    >
+                      I Actually Own the Property →
+                    </button>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -349,7 +418,7 @@ export default function Funnel() {
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-center text-[#102022] mb-2">
                 Where should we send the assessment?
               </h2>
-              <p className="text-center text-[#667376] text-sm mb-4">Your details are kept confidential under our Epistemic Quarantine protocol.</p>
+              <p className="text-center text-[#667376] text-sm mb-4">Your details stay 100% private—never sold to call centres or multi-quote lead brokers.</p>
               
               <div className="space-y-3 mb-4">
                 <div>
