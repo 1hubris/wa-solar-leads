@@ -116,7 +116,14 @@ export default function PricingCalculator() {
 
   const [tenderPublishSuccess, setTenderPublishSuccess] = useState(false);
   const [showFinalizationModal, setShowFinalizationModal] = useState(false);
-  const [depositConfirmed, setDepositConfirmed] = useState(true);
+  const [depositConfirmed, setDepositConfirmed] = useState(false);
+  const [lawShieldCustomerAck, setLawShieldCustomerAck] = useState(false);
+  const [lawShieldConsultantAck, setLawShieldConsultantAck] = useState(false);
+  const [customerSignatureName, setCustomerSignatureName] = useState("");
+  const [consultantSignatureName, setConsultantSignatureName] = useState("");
+  const [contractSignedDate, setContractSignedDate] = useState(() =>
+    new Date().toLocaleDateString("en-CA")
+  );
   const [customerPII, setCustomerPII] = useState({
     name: "Verified WA Homeowner",
     phone: "0400 000 000",
@@ -182,6 +189,7 @@ export default function PricingCalculator() {
       email: lead.email || "homeowner@sunnystate.com.au",
       address: lead.address || "Perth Metropolitan Area, WA"
     });
+    setCustomerSignatureName(lead.name || "");
     setEmailTo(lead.email || "");
     if (typeof lead.billSize === "number" && lead.billSize > 0) {
       setBiMonthlyBill(lead.billSize);
@@ -208,7 +216,7 @@ export default function PricingCalculator() {
         headers: { 
           "Content-Type": "application/json",
           "Idempotency-Key": `publish-${crypto.randomUUID()}`,
-          "x-sunny-auth": adminPinInput.trim() || process.env.NEXT_PUBLIC_ADMIN_PIN || "2026"
+          "x-sunny-auth": adminPinInput.trim() || consultantCodeInput.trim() || process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX"
         },
         body: JSON.stringify({
           suburb: "Perth Metro, WA",
@@ -1221,50 +1229,195 @@ export default function PricingCalculator() {
           </div>
         </div>
       )}
-      {/* FINALIZATION MODAL */}
+      {/* FINALIZATION MODAL: MULTI-PARTY LEGAL EXECUTION & LIABILITY SHIELD GATE */}
       {showFinalizationModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-700">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-700 my-8">
             <div className="bg-slate-900 p-5 text-white border-b border-slate-700">
-              <h3 className="font-bold text-xl flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-blue-400" /> Secure Customer PII Intake
-              </h3>
-              <p className="text-slate-400 text-xs mt-1">This data will be redacted on the SunnyEX public board and only revealed to the specific installer who claims the contract under the MSA.</p>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg sm:text-xl flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  Multi-Party Legal Execution &amp; Clearinghouse Shield
+                </h3>
+                <span className="text-[10px] font-mono uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-full">
+                  ACL s 64 • WA EC • s 763E
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">
+                Publishing to SunnyEX requires verified execution by the Homeowner and Consultant, binding all parties to the statutory liability transfer and source-cleared settlement rules protecting Sunny State Quotes. Customer PII remains redacted on the public board until an accredited WA Electrical Contractor executes the MSA claim.
+              </p>
             </div>
-            <div className="p-6 space-y-4">
+
+            <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+              {/* Section 1: Customer PII */}
               <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Customer Full Name</label>
-                <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-800" value={customerPII.name} onChange={(e) => setCustomerPII({...customerPII, name: e.target.value})} />
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2.5">
+                  1. Verified Homeowner &amp; Installation Site (Redacted Until MSA Claim)
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Customer Full Legal Name</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border border-slate-300 rounded-lg text-sm text-slate-800"
+                      value={customerPII.name}
+                      onChange={(e) => setCustomerPII({ ...customerPII, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Customer Mobile Number</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border border-slate-300 rounded-lg text-sm text-slate-800"
+                      value={customerPII.phone}
+                      onChange={(e) => setCustomerPII({ ...customerPII, phone: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Customer Email Address</label>
+                    <input
+                      type="email"
+                      className="w-full p-2 border border-slate-300 rounded-lg text-sm text-slate-800"
+                      value={customerPII.email}
+                      onChange={(e) => setCustomerPII({ ...customerPII, email: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Exact Street Address (WA)</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border border-slate-300 rounded-lg text-sm text-slate-800"
+                      value={customerPII.address}
+                      onChange={(e) => setCustomerPII({ ...customerPII, address: e.target.value })}
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Customer Phone Number</label>
-                <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-800" value={customerPII.phone} onChange={(e) => setCustomerPII({...customerPII, phone: e.target.value})} />
+
+              {/* Section 2: Digital Signatures */}
+              <div className="border-t border-slate-200 pt-4">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2.5">
+                  2. Executed Contract Signatures (Customer &amp; Consultant)
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Homeowner Signed Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. J. Citizen (Signed)"
+                      className="w-full p-2 border border-slate-300 rounded-lg text-sm text-slate-800 font-medium"
+                      value={customerSignatureName}
+                      onChange={(e) => setCustomerSignatureName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Consultant Signature / ID <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Consultant Full Name"
+                      className="w-full p-2 border border-slate-300 rounded-lg text-sm text-slate-800 font-medium"
+                      value={consultantSignatureName}
+                      onChange={(e) => setConsultantSignatureName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Contract Execution Date</label>
+                    <input
+                      type="date"
+                      className="w-full p-2 border border-slate-300 rounded-lg text-sm text-slate-800 font-mono"
+                      value={contractSignedDate}
+                      onChange={(e) => setContractSignedDate(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Customer Email</label>
-                <input type="email" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-800" value={customerPII.email} onChange={(e) => setCustomerPII({...customerPII, email: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Exact Street Address</label>
-                <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-800" value={customerPII.address} onChange={(e) => setCustomerPII({...customerPII, address: e.target.value})} />
-              </div>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={depositConfirmed}
-                    onChange={(e) => setDepositConfirmed(e.target.checked)}
-                    className="mt-0.5 rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500"
-                  />
-                  <span className="text-xs text-slate-800 leading-snug">
-                    <strong>Consultant Attestation — Signed Customer Contract &amp; $250 Deposit Verified (Law 65):</strong> I confirm the homeowner has signed the installation quote/contract via the consultant and cleared the upfront booking deposit before dispatching to the SunnyEX Live Order Book.
-                  </span>
-                </label>
+
+              {/* Section 3: Mandatory 3-Point Legal & Liability Protection Gate */}
+              <div className="border-t border-slate-200 pt-4 space-y-2.5">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                  3. Mandatory Legal Obligations &amp; Sunny State Quotes Liability Shield
+                </h4>
+
+                {/* Checkbox 1: Customer Liability Transfer */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={lawShieldCustomerAck}
+                      onChange={(e) => setLawShieldCustomerAck(e.target.checked)}
+                      className="mt-0.5 rounded border-slate-400 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span className="text-xs text-slate-800 leading-snug">
+                      <strong>1. Homeowner Signed Contract &amp; Principal Contractor Liability Transfer (Law 1 / ACL s 64):</strong> I confirm the Homeowner has been informed of and signed the Sunny State Quotes Terms &amp; Conditions, expressly acknowledging that <strong>Sunny State Quotes acts strictly as an independent design, assessment, and procurement clearinghouse</strong> (not the physical electrical contractor) and that 100% of statutory installation obligations, roof penetrations, WA Electrical Safety Certificates (ESC), Notices of Completion (NOC), and 10-year workmanship liability transfer directly to the assigned WA Licensed Electrical Contractor (EC).
+                    </span>
+                  </label>
+                </div>
+
+                {/* Checkbox 2: Source-Cleared Deposit & Split-Settlement */}
+                <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={depositConfirmed}
+                      onChange={(e) => setDepositConfirmed(e.target.checked)}
+                      className="mt-0.5 rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span className="text-xs text-slate-800 leading-snug">
+                      <strong>2. Source-Cleared ${upfrontCustomerDeposit.toLocaleString()} Booking Deposit &amp; Irrevocable Split-Settlement (Law 65):</strong> I confirm the Homeowner has paid the upfront booking/clearing deposit and signed the Irrevocable Tri-Party STC/Finance Split-Settlement Direction so that all Sunny State Quotes clearinghouse, consultant, and reserve allocations are settled at the source with $0 post-installation B2B credit exposure.
+                    </span>
+                  </label>
+                </div>
+
+                {/* Checkbox 3: Consultant Statutory Compliance & s 763E Reserve Disclosure */}
+                <div className="bg-purple-50/70 border border-purple-200 rounded-xl p-3">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={lawShieldConsultantAck}
+                      onChange={(e) => setLawShieldConsultantAck(e.target.checked)}
+                      className="mt-0.5 rounded border-purple-400 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-xs text-slate-800 leading-snug">
+                      <strong>3. Consultant Statutory Compliance &amp; s 763E Reserve Attestation (Law 66 / Law 67 / ACL s 18):</strong> I attest as the Consultant that I made zero unapproved verbal warranties or representations outside the written Quote PDF, and that the $650 Community Protection Reserve was disclosed strictly as an incidental, discretionary corporate balance-sheet provision (s 763E <em>Corporations Act 2001</em> (Cth) / AASB 137; capped at $17,000 AUD wholesale replacement above the $50,000 Solvency Floor), never as standalone insurance or a statutory trust.
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
-            <div className="p-4 bg-slate-50 flex gap-3 justify-end border-t border-slate-200">
-              <button onClick={() => setShowFinalizationModal(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800">Cancel</button>
-              <button onClick={() => { setShowFinalizationModal(false); handlePublishToTender(); }} disabled={isPublishingTender || !depositConfirmed} className="px-5 py-2 bg-blue-600 disabled:opacity-50 text-white text-sm font-bold rounded shadow hover:bg-blue-700">Confirm & Publish to SunnyEX</button>
+
+            <div className="p-4 bg-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200">
+              <span className="text-[11px] text-slate-500 font-medium">
+                All 3 legal attestations + Customer &amp; Consultant signatures required to unlock broadcast.
+              </span>
+              <div className="flex gap-3 w-full sm:w-auto justify-end">
+                <button
+                  onClick={() => setShowFinalizationModal(false)}
+                  className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowFinalizationModal(false);
+                    handlePublishToTender();
+                  }}
+                  disabled={
+                    isPublishingTender ||
+                    !lawShieldCustomerAck ||
+                    !depositConfirmed ||
+                    !lawShieldConsultantAck ||
+                    customerSignatureName.trim().length < 2 ||
+                    consultantSignatureName.trim().length < 2
+                  }
+                  className="px-5 py-2.5 bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow hover:bg-emerald-500 transition-all"
+                >
+                  Execute Legal Sign-Off &amp; Publish to SunnyEX
+                </button>
+              </div>
             </div>
           </div>
         </div>

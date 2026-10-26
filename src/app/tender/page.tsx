@@ -92,6 +92,10 @@ export default function Marketplace() {
   // Modal States
   const [selectedJobForClaim, setSelectedJobForClaim] = useState<TenderJob | null>(null);
   const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+  const [isSettlementAccepted, setIsSettlementAccepted] = useState(false);
+  const [isSubrogationAccepted, setIsSubrogationAccepted] = useState(false);
+  const [installerEcLicence, setInstallerEcLicence] = useState("EC-014892");
+  const [installerSignatureName, setInstallerSignatureName] = useState("");
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimSuccessJob, setClaimSuccessJob] = useState<TenderJob | null>(null);
 
@@ -140,7 +144,16 @@ export default function Marketplace() {
 
   // Handle Contract Claiming
   const handleExecuteClaim = async () => {
-    if (!selectedJobForClaim || !isTermsAccepted) return;
+    if (
+      !selectedJobForClaim ||
+      !isTermsAccepted ||
+      !isSettlementAccepted ||
+      !isSubrogationAccepted ||
+      installerSignatureName.trim().length < 2 ||
+      installerEcLicence.trim().length < 4
+    ) {
+      return;
+    }
     setIsClaiming(true);
     try {
       const res = await fetch("/api/tender", {
@@ -170,6 +183,8 @@ export default function Marketplace() {
       setIsClaiming(false);
       setSelectedJobForClaim(null);
       setIsTermsAccepted(false);
+      setIsSettlementAccepted(false);
+      setIsSubrogationAccepted(false);
     }
   };
 
@@ -983,12 +998,15 @@ export default function Marketplace() {
 
       {/* MODAL 1: Claim Execution & Legal Acceptance */}
       {selectedJobForClaim && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 sm:p-8 max-w-xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-150 my-8">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <Activity className="w-6 h-6 text-emerald-400" />
-                <h3 className="text-xl font-black text-white tracking-tight">Execute Tender Contract</h3>
+                <div>
+                  <h3 className="text-xl font-black text-white tracking-tight">Execute Principal Contractor MSA &amp; Claim</h3>
+                  <p className="text-[11px] text-slate-400">Binding Statutory Liability Transfer &amp; Source-Cleared Settlement Execution</p>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedJobForClaim(null)}
@@ -998,18 +1016,18 @@ export default function Marketplace() {
               </button>
             </div>
 
-            <div className="my-6 space-y-4">
+            <div className="my-5 space-y-4 max-h-[70vh] overflow-y-auto pr-1">
               {/* Financial Summary */}
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
                 <div>
-                  <span className="text-xs text-slate-500 uppercase tracking-widest block">Net Payout to Your Bank</span>
+                  <span className="text-xs text-slate-500 uppercase tracking-widest block">Net Payout to Your Bank (Source-Cleared)</span>
                   <span className="font-mono font-black text-2xl text-emerald-400">
                     ${selectedJobForClaim.payout.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-purple-400 uppercase tracking-widest font-bold block">Warranty Escrow</span>
-                  <span className="font-mono font-bold text-slate-300">$650.00 Escrowed</span>
+                  <span className="text-xs text-purple-400 uppercase tracking-widest font-bold block">s 763E Reserve Provision</span>
+                  <span className="font-mono font-bold text-slate-300">$650.00 Provisioned</span>
                 </div>
               </div>
 
@@ -1027,21 +1045,78 @@ export default function Marketplace() {
                 </div>
               </div>
 
-              {/* Legal Disclaimer Checkbox */}
-              <div className="bg-slate-950/80 border border-slate-800 p-4 rounded-xl">
-                <label className="flex items-start gap-3 cursor-pointer">
+              {/* Digital Sign-Off Inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950/70 border border-slate-800 p-3.5 rounded-xl">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    WA Electrical Contractor (EC) Licence # <span className="text-red-400">*</span>
+                  </label>
                   <input
-                    type="checkbox"
-                    checked={isTermsAccepted}
-                    onChange={(e) => setIsTermsAccepted(e.target.checked)}
-                    className="w-4 h-4 mt-1 rounded text-emerald-500 focus:ring-emerald-400 bg-slate-900 border-slate-700"
+                    type="text"
+                    value={installerEcLicence}
+                    onChange={(e) => setInstallerEcLicence(e.target.value)}
+                    placeholder="e.g. EC-014892"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
                   />
-                  <div className="text-xs text-slate-300 leading-relaxed">
-                    <strong>Master Tender Agreement & Source Clearing Direction:</strong> I confirm that{" "}
-                    <span className="text-emerald-400 font-bold">Installer_094</span> holds an active WA Electrical Contractor Licence
-                    and CEC Accreditation. By claiming this job, we assume 100% statutory installation liability, Electrical Safety Certificate (ESC) sign-off, and 10-year workmanship warranties, and execute an Irrevocable Tri-Party Payment Direction authorising upfront deposit clearing and STC/Finance split-settlement at the source prior to net payout release (including 14-day solvent warranty SLA set-off). Sunny State Quotes is strictly indemnified as the brokerage entity.
-                  </div>
-                </label>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    Certifying Nominee / Director Signature <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={installerSignatureName}
+                    onChange={(e) => setInstallerSignatureName(e.target.value)}
+                    placeholder="Full Legal Name"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-medium focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* 3-Point Legal & Liability Protection Gate */}
+              <div className="space-y-2.5">
+                <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isTermsAccepted}
+                      onChange={(e) => setIsTermsAccepted(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 rounded text-emerald-500 focus:ring-emerald-400 bg-slate-900 border-slate-700"
+                    />
+                    <div className="text-xs text-slate-300 leading-relaxed">
+                      <strong>1. 100% Principal Contractor Liability &amp; Sunny State Quotes Indemnity (Law 1 / WA EC Regulations):</strong> I confirm that{" "}
+                      <span className="text-emerald-400 font-bold">Installer_094 ({installerEcLicence || "EC Required"})</span> holds an active WA Electrical Contractor Licence and SAA/CEC Accreditation. By claiming this contract, we assume 100% statutory Principal Contractor liability for physical installation, roof structural penetrations, WA Electrical Safety Certificate (ESC), Notice of Completion (NOC), STC compliance, and the 10-year workmanship warranty, and irrevocably indemnify Sunny State Quotes and its Consultants as the independent procurement clearinghouse.
+                    </div>
+                  </label>
+                </div>
+
+                <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isSettlementAccepted}
+                      onChange={(e) => setIsSettlementAccepted(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 rounded text-emerald-500 focus:ring-emerald-400 bg-slate-900 border-slate-700"
+                    />
+                    <div className="text-xs text-slate-300 leading-relaxed">
+                      <strong>2. Irrevocable Source-Cleared Split-Settlement &amp; No-Predatory-Variation Covenant (Law 65):</strong> We execute an Irrevocable Tri-Party Payment Direction authorising upfront customer booking deposit clearing and STC/Finance split-settlement at the source prior to net payout release, and covenant that we will not demand unapproved price variations from the homeowner.
+                    </div>
+                  </label>
+                </div>
+
+                <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isSubrogationAccepted}
+                      onChange={(e) => setIsSubrogationAccepted(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 rounded text-emerald-500 focus:ring-emerald-400 bg-slate-900 border-slate-700"
+                    />
+                    <div className="text-xs text-slate-300 leading-relaxed">
+                      <strong>3. 14-Day Solvent Self-Remediation Set-Off &amp; Anti-Phoenix Personal Subrogation (Law 66 / Law 67):</strong> While active, we agree to remedy any verified workmanship defect within 14 days at our sole cost (or authorise automatic order-book freeze and payout set-off). If the $650 Community Protection Reserve is drawn following insolvency where a false or non-compliant ESC/NOC was signed under the <em>Electricity (Licensing) Regulations 1991</em> (WA), Sunny State Quotes is automatically subrogated against the certifying Nominee Electrician and Director personally.
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -1053,11 +1128,18 @@ export default function Marketplace() {
                 Cancel
               </button>
               <button
-                disabled={!isTermsAccepted || isClaiming}
+                disabled={
+                  !isTermsAccepted ||
+                  !isSettlementAccepted ||
+                  !isSubrogationAccepted ||
+                  installerSignatureName.trim().length < 2 ||
+                  installerEcLicence.trim().length < 4 ||
+                  isClaiming
+                }
                 onClick={handleExecuteClaim}
                 className="flex-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] text-sm flex items-center justify-center gap-2"
               >
-                {isClaiming ? "Executing Lock-In..." : "CONFIRM CLAIM"}
+                {isClaiming ? "Executing Lock-In..." : "SIGN MSA & CONFIRM CLAIM"}
               </button>
             </div>
           </div>

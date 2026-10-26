@@ -283,18 +283,46 @@ export const CustomerTermsTemplate = () => {
         </div>
       </div>
 
-      <div className="mt-10 border-t-2 border-slate-200 pt-6">
-        <h3 className="text-base font-bold text-slate-800 mb-3">Customer Acceptance</h3>
-        <p className="text-xs text-slate-600 mb-6">By signing below, I acknowledge that I have read, understood, and agree to the Terms &amp; Conditions outlined above, and I authorise the progression of grid connection applications and hardware procurement.</p>
-
-        <div className="grid grid-cols-2 gap-12">
-          <div>
-            <div className="border-b border-slate-400 h-10 mb-2"></div>
-            <p className="text-xs font-bold text-slate-500 uppercase">Customer Signature</p>
+      <div className="mt-8 border-t-2 border-slate-200 pt-5 space-y-5">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-1.5">Part A — Homeowner Binding Acceptance &amp; Clearinghouse Liability Shield</h3>
+          <p className="text-[10px] text-slate-600 leading-relaxed mb-4">
+            By signing below, I confirm that I have read, understood, and agree to the Terms &amp; Conditions above, including: (1) <strong>Sunny State Quotes acts strictly as an independent design, assessment, and procurement clearinghouse</strong> (not the physical electrical contractor), and all statutory installation obligations, roof penetrations, WA Electrical Safety Certificates (ESC), Notices of Completion (NOC), and 10-Year Workmanship Warranties rest 100% with the assigned WA Licensed Electrical Contracting Company (EC); (2) the upfront booking/clearing deposit and Irrevocable Tri-Party STC/Finance Split-Settlement Direction; and (3) that the Community Protection Reserve is an incidental, discretionary corporate balance-sheet provision (s 763E <em>Corporations Act 2001</em> (Cth) / AASB 137; capped at $17,000 AUD wholesale replacement above the $50,000 Solvency Floor), and not an insurance policy or statutory trust.
+          </p>
+          <div className="grid grid-cols-3 gap-6">
+            <div>
+              <div className="border-b border-slate-400 h-8 mb-1"></div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Homeowner Full Name</p>
+            </div>
+            <div>
+              <div className="border-b border-slate-400 h-8 mb-1"></div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Homeowner Signature</p>
+            </div>
+            <div>
+              <div className="border-b border-slate-400 h-8 mb-1"></div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Date Signed</p>
+            </div>
           </div>
-          <div>
-            <div className="border-b border-slate-400 h-10 mb-2"></div>
-            <p className="text-xs font-bold text-slate-500 uppercase">Date</p>
+        </div>
+
+        <div className="border-t border-slate-200 pt-4">
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-1.5">Part B — Sunny State Quotes Consultant Compliance Attestation</h3>
+          <p className="text-[10px] text-slate-600 leading-relaxed mb-4">
+            I attest as the authorised Sunny State Quotes Consultant that I have explained all clearinghouse liability transfers and statutory conditions to the Homeowner, made zero verbal representations or warranties outside this written schedule (ACL s 18 / s 29), verified payment of the upfront booking deposit, and disclosed the Community Protection Reserve strictly as an incidental corporate provision under s 763E.
+          </p>
+          <div className="grid grid-cols-3 gap-6">
+            <div>
+              <div className="border-b border-slate-400 h-8 mb-1"></div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Consultant Name &amp; ID</p>
+            </div>
+            <div>
+              <div className="border-b border-slate-400 h-8 mb-1"></div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Consultant Signature</p>
+            </div>
+            <div>
+              <div className="border-b border-slate-400 h-8 mb-1"></div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Verification Date</p>
+            </div>
           </div>
         </div>
       </div>
@@ -439,6 +467,27 @@ export const InstallerWorkOrderTemplate = ({ data }: { data: QuoteData }) => {
         <strong>B2B Tender Conditions, Source Clearing &amp; Anti-Phoenix Subrogation:</strong> By accepting this job, the Electrical Contracting Company assumes 100% legal liability for the physical installation, STC claims, Electrical Safety Certificates (ESC), and 10-year workmanship warranties, and executes an Irrevocable Tri-Party Payment Direction authorising upfront customer deposit clearing and STC/Finance split-settlement at the source prior to net payout release. If the Installer remains active and fails to remedy a verified workmanship defect within 14 days, Sunny State Quotes may freeze order-book access and set off third-party rectification costs against any unpaid or future payouts. If the Reserve expends funds following the Installer&apos;s insolvency, Sunny State Quotes is automatically subrogated to all statutory claims against the Installer, its insurers, and—where a false or non-compliant ESC/NOC was signed under the <em>Electricity (Licensing) Regulations 1991</em> (WA)—against the certifying Nominee Electrician and Director personally.
         <br /><br />
         <strong>Margin Integrity:</strong> The installer net revenue absorbs standard Customer Acquisition Costs (CAC). All site extras and billables must be inclusive of this final quote so the customer cannot incur extras based on predatory behaviour. If unforeseen but proven extras occur on-site, a 3-way negotiation will be entered between the consultant, the marketing entity, and the installer to balance out the overhead and preserve profitability for all parties.
+      </div>
+
+      {/* Principal Electrical Contractor Statutory Sign-Off */}
+      <div className="mt-6 pt-4 border-t-2 border-slate-300">
+        <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">
+          Principal Electrical Contractor (EC) Statutory Liability &amp; Indemnity Execution
+        </h4>
+        <div className="grid grid-cols-3 gap-6">
+          <div>
+            <div className="border-b border-slate-400 h-8 mb-1"></div>
+            <p className="text-[10px] font-bold text-slate-500 uppercase">Electrical Contractor Entity &amp; WA EC #</p>
+          </div>
+          <div>
+            <div className="border-b border-slate-400 h-8 mb-1"></div>
+            <p className="text-[10px] font-bold text-slate-500 uppercase">Certifying Nominee / Director Signature</p>
+          </div>
+          <div>
+            <div className="border-b border-slate-400 h-8 mb-1"></div>
+            <p className="text-[10px] font-bold text-slate-500 uppercase">Execution Date</p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -11,7 +11,14 @@ function isAuthorizedRequest(req: Request): boolean {
   const authHeader = (req.headers.get("x-sunny-auth") || "").trim().toUpperCase();
   const expectedAdmin = (process.env.SUNNY_API_TOKEN || process.env.NEXT_PUBLIC_ADMIN_PIN || "2026").toUpperCase();
   const expectedPartner = (process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX").toUpperCase();
-  return Boolean(authHeader && (authHeader === expectedAdmin || authHeader === expectedPartner || authHeader === "EC-094"));
+  const expectedConsultant = (process.env.NEXT_PUBLIC_CONSULTANT_PIN || "CONSULTANT").toUpperCase();
+  return Boolean(
+    authHeader &&
+      (authHeader === expectedAdmin ||
+        authHeader === expectedPartner ||
+        authHeader === expectedConsultant ||
+        authHeader === "EC-094")
+  );
 }
 
 // --- ZOD SCHEMAS FOR ZERO-TRUST INGRESS ---
