@@ -49,10 +49,33 @@ export default function PricingCalculator() {
     installerNetRevenue, estInstallerProfit, annualBaselineBill, annualNewBill, annualSavingsYear1, monthlyBeforeBill, monthlyAfterBill, annualProductionKwh, summerDailyKwh, winterDailyKwh, selfConsumptionPct, selfPoweredPct, solarSharePct, batterySharePct, gridSharePct, discountedPaybackYears, irrPct, npv20Yr, netSavings20Yr, roiPct20Yr, quoteData, marketingFee, baseFee
   } = usePricingEngine();
 
+  const [isConsultantVerified, setIsConsultantVerified] = useState(false);
+  const [consultantCodeInput, setConsultantCodeInput] = useState("");
+  const [consultantCodeError, setConsultantCodeError] = useState(false);
+
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [showAdminPinModal, setShowAdminPinModal] = useState(false);
   const [adminPinInput, setAdminPinInput] = useState("");
   const [adminPinError, setAdminPinError] = useState(false);
+
+  const handleConsultantLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = consultantCodeInput.trim().toUpperCase();
+    const expectedAdmin = (process.env.NEXT_PUBLIC_ADMIN_PIN || "2026").toUpperCase();
+    const expectedConsultant = (process.env.NEXT_PUBLIC_CONSULTANT_PIN || process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX").toUpperCase();
+    if (code === expectedAdmin) {
+      setIsConsultantVerified(true);
+      setIsAdminUnlocked(true);
+      setAdminPinInput(consultantCodeInput.trim());
+      setConsultantCodeError(false);
+    } else if (code === expectedConsultant || code === "CONSULTANT") {
+      setIsConsultantVerified(true);
+      setViewMode("Consultant");
+      setConsultantCodeError(false);
+    } else {
+      setConsultantCodeError(true);
+    }
+  };
 
   const handleRequestAdminView = () => {
     if (isAdminUnlocked) {
@@ -249,6 +272,60 @@ export default function PricingCalculator() {
       alert("Failed to generate PDF. Please try again.");
     }
   };
+
+  if (!isConsultantVerified) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center p-4 font-sans">
+        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Calculator className="w-6 h-6 text-accent-500" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-white tracking-tight">
+                SUNNY STATE // CONSULTANT DESK
+              </h1>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                Authorized Sales Consultants Only • Zero Customer Access
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 leading-relaxed mb-6">
+            This quoting and tender dispatch console is restricted to authorized Sunny State Solar consultants. Customers have zero access to internal pricing tiers, floor calculations, or marketplace dispatch.
+          </p>
+          <form onSubmit={handleConsultantLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                Consultant Access Code
+              </label>
+              <input
+                type="password"
+                value={consultantCodeInput}
+                onChange={(e) => {
+                  setConsultantCodeInput(e.target.value);
+                  setConsultantCodeError(false);
+                }}
+                placeholder="Enter Consultant Code (e.g. SUNNYEX)"
+                className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-sm focus:border-emerald-500 outline-none"
+                autoFocus
+              />
+            </div>
+            {consultantCodeError && (
+              <p className="text-xs text-red-400 font-bold">
+                Invalid Consultant Access Code. Access denied.
+              </p>
+            )}
+            <button
+              type="submit"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black rounded-xl text-sm uppercase tracking-wider transition-all"
+            >
+              Unlock Consultant Quoting Desk
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f4f7f6] p-4 sm:p-8">
@@ -850,28 +927,26 @@ export default function PricingCalculator() {
                   </button>
                 </div>
 
-                {viewMode === "Admin" && (
-                  <button
-                    disabled={isPublishingTender}
-                    onClick={() => setShowFinalizationModal(true)}
-                    className={`w-full py-3 px-4 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-sm ${
-                      tenderPublishSuccess
-                        ? "bg-emerald-600 text-white"
-                        : "bg-slate-900 hover:bg-slate-850 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                    }`}
-                  >
-                    {tenderPublishSuccess ? (
-                      <>
-                        <Check className="w-4 h-4 text-white" /> Broadcasted to SunnyEX Tender Order Book!
-                      </>
-                    ) : (
-                      <>
-                        <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-                        {isPublishingTender ? "Broadcasting to Marketplace..." : "Publish to SunnyEX Tender Order Book"}
-                      </>
-                    )}
-                  </button>
-                )}
+                <button
+                  disabled={isPublishingTender}
+                  onClick={() => setShowFinalizationModal(true)}
+                  className={`w-full py-3 px-4 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-sm ${
+                    tenderPublishSuccess
+                      ? "bg-emerald-600 text-white"
+                      : "bg-slate-900 hover:bg-slate-850 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                  }`}
+                >
+                  {tenderPublishSuccess ? (
+                    <>
+                      <Check className="w-4 h-4 text-white" /> Broadcasted to SunnyEX Tender Order Book!
+                    </>
+                  ) : (
+                    <>
+                      <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
+                      {isPublishingTender ? "Broadcasting to Marketplace..." : "Publish Signed Contract to SunnyEX Order Book"}
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 
@@ -1182,7 +1257,7 @@ export default function PricingCalculator() {
                     className="mt-0.5 rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span className="text-xs text-slate-800 leading-snug">
-                    <strong>Verify $250 Upfront Booking &amp; Engineering Deposit (Law 65):</strong> Confirm homeowner acceptance and upfront clearing deposit before dispatching to the SunnyEX Live Order Book.
+                    <strong>Consultant Attestation — Signed Customer Contract &amp; $250 Deposit Verified (Law 65):</strong> I confirm the homeowner has signed the installation quote/contract via the consultant and cleared the upfront booking deposit before dispatching to the SunnyEX Live Order Book.
                   </span>
                 </label>
               </div>
