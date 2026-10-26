@@ -154,20 +154,20 @@ button, input, select, textarea { font: inherit; }
 
 /* Network Diagram */
 .network { display: grid; grid-template-columns: .82fr 1.18fr; gap: 80px; align-items: center; }
-.network-diagram { position: relative; min-height: 420px; }
-.network-center { position: absolute; left: 45%; top: 45%; transform: translate(-50%, -50%); width: 155px; height: 155px; border-radius: 50%; display: grid; place-items: center; text-align: center; background: #fff; border: 2px solid var(--orange); box-shadow: var(--shadow); font-family: Georgia, serif; font-size: 20px; }
-.network-center span { display: block; font-family: Inter, sans-serif; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
-.node { position: absolute; width: 230px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: 0 10px 26px rgba(16,32,34,.05); }
+.network-diagram { position: relative; min-height: 430px; }
+.network-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 155px; height: 155px; border-radius: 50%; display: grid; place-items: center; text-align: center; background: #fff; border: 2px solid var(--orange); box-shadow: var(--shadow); font-family: Georgia, serif; font-size: 20px; z-index: 2; }
+.network-center span { display: block; font-family: Inter, sans-serif; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.node { position: absolute; width: 235px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: 0 10px 26px rgba(16,32,34,.05); z-index: 1; }
 .node small { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
-.node b { display: block; margin-top: 2px; font-size: 12px; }
+.node b { display: block; margin-top: 3px; font-size: 12.5px; }
 .node:before { content: ""; position: absolute; top: 50%; width: 88px; height: 1px; background: var(--line); }
-.node:nth-child(2) { left: 0; top: 8%; } .node:nth-child(2):before { right: -88px; }
-.node:nth-child(3) { left: 0; top: 32%; } .node:nth-child(3):before { right: -88px; }
+.node:nth-child(2) { left: 0; top: 6%; } .node:nth-child(2):before { right: -88px; }
+.node:nth-child(3) { left: 0; top: 31%; } .node:nth-child(3):before { right: -88px; }
 .node:nth-child(4) { left: 0; top: 56%; } .node:nth-child(4):before { right: -88px; }
-.node:nth-child(5) { left: 0; top: 80%; } .node:nth-child(5):before { right: -88px; }
-.node:nth-child(6) { right: 0; top: 20%; } .node:nth-child(6):before { left: -88px; }
-.node:nth-child(7) { right: 0; top: 52%; } .node:nth-child(7):before { left: -88px; }
-.node:nth-child(8) { right: 0; top: 77%; } .node:nth-child(8):before { left: -88px; }
+.node:nth-child(5) { left: 0; top: 81%; } .node:nth-child(5):before { right: -88px; }
+.node:nth-child(6) { right: 0; top: 18%; } .node:nth-child(6):before { left: -88px; }
+.node:nth-child(7) { right: 0; top: 46%; } .node:nth-child(7):before { left: -88px; }
+.node:nth-child(8) { right: 0; top: 74%; } .node:nth-child(8):before { left: -88px; }
 
 /* Escrow */
 .escrow { background: linear-gradient(135deg, #eff7f2, #f8f4ed); }

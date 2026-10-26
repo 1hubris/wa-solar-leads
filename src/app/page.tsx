@@ -174,13 +174,13 @@ export default function Home() {
                 <div className="eyebrow">A better way to go solar</div>
                 <h2 className="serif">No door knockers.<br />Reserve-backed solar.</h2>
               </div>
-              <p>Traditional solar companies inflate system prices to fund aggressive door knockers and high-pressure field sales markups. Our centralized design-and-tender architecture eliminates door-knocker overheads—allowing our in-house design consultants to deliver comfortable, accurate consultations, fair pricing, and Reserve-backed installs.</p>
+              <p>Traditional solar retailers inflate system prices to fund aggressive door knockers and bloated multi-national retail overheads. Our design-and-tender architecture removes those overheads from the equation—allowing our in-house design consultants to deliver comfortable, accurate consultations, fair pricing, and Reserve-backed installs.</p>
             </div>
             <div className="grid-3">
               <div className="card">
                 <div className="icon">⌂</div>
                 <h3>No Door-Knocker Markups</h3>
-                <p>By eliminating door knockers and high-pressure in-home sales teams, our centralized consultation model keeps your solar installation fair, comfortable, and transparent.</p>
+                <p>By eliminating door knockers and bloated multi-national retail overheads, our consultation model keeps your solar installation fair, comfortable, and transparent.</p>
               </div>
               <div className="card">
                 <div className="icon">⌗</div>
@@ -282,17 +282,18 @@ export default function Home() {
             </div>
 
             <div className="network-diagram">
-              <div className="node"><small>3 Phase</small><b>Switchboard requirement</b></div>
-              <div className="node"><small>Battery</small><b>Storage installation</b></div>
-              <div className="node"><small>Tile Roof</small><b>Roofing complexity</b></div>
-              <div className="node"><small>Large System</small><b>High-capacity project</b></div>
-              <div className="node"><small>Perth Metro</small><b>Service area</b></div>
-              <div className="node"><small>Electrical Co.</small><b>Vetted WA partner</b></div>
-              <div className="node"><small>Electrical Co.</small><b>Capacity available</b></div>
-              <div className="node"><small>Electrical Co.</small><b>Project fit</b></div>
               <div className="network-center">
-                SUNNYEX<span>pre-quoted project</span>
+                <div>
+                  SUNNYEX<span>Installer Match</span>
+                </div>
               </div>
+              <div className="node"><small>1. Roof &amp; Site Profile</small><b>Single/Double Storey, Tile or Tin</b></div>
+              <div className="node"><small>2. System &amp; Storage</small><b>Solar Array &amp; Battery Sizing</b></div>
+              <div className="node"><small>3. Electrical Scope</small><b>Single or 3-Phase Switchboard</b></div>
+              <div className="node"><small>4. WA Service Zone</small><b>Local Crew &amp; Suburb Coverage</b></div>
+              <div className="node"><small>Vetted Licence Gate</small><b>CEC-Accredited WA Electrical Co.</b></div>
+              <div className="node"><small>Proven Track Record</small><b>4.4★+ Rating &amp; 65+ Reviews</b></div>
+              <div className="node"><small>Warranty &amp; Capacity</small><b>10-Yr Workmanship &amp; Ready Crew</b></div>
             </div>
           </div>
         </section>
@@ -307,17 +308,7 @@ export default function Home() {
                 <span style={{ color: "var(--orange)" }}>Your protection shouldn&apos;t.</span>
               </h2>
               <p className="hero-lead" style={{ fontSize: "17px" }}>
-                On every participating build, Sunny State allocates a dedicated portion of its platform fee into our Community Protection Reserve to backstop eligible orphaned workmanship obligations if an assigned installer ever ceases trading. The reserve model is designed around durability, transparency, and long-term homeowner confidence.
-              </p>
-              <p style={{ marginTop: "14px", fontSize: "12px", lineHeight: 1.55, color: "#6e6a63", maxWidth: "560px" }}>
-                *Incidental discretionary corporate reserve operated under s 763E of the <em>Corporations Act 2001</em> (Cth) covering verified orphaned installation workmanship up to $17,000 AUD if an accredited WA installer enters formal external administration. Provided in addition to statutory consumer guarantees under the Australian Consumer Law.{" "}
-                <button
-                  type="button"
-                  onClick={() => setTermsModalOpen(true)}
-                  style={{ background: "none", border: "none", padding: 0, color: "var(--orange)", textDecoration: "underline", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}
-                >
-                  View Reserve &amp; Privacy Terms
-                </button>
+                On every participating build, Sunny State allocates a dedicated portion of its platform fee into our Community Protection Reserve to backstop eligible orphaned workmanship obligations if an assigned installer ever ceases trading. Full reserve terms and conditions are provided and signed during your design consultation.
               </p>
               <Link className="btn btn-outline" href="/assessment" style={{ marginTop: "20px" }}>
                 Get Protected Build →
@@ -330,15 +321,9 @@ export default function Home() {
               </div>
               <div className="escrow-link"></div>
               <div className="escrow-link two"></div>
-              <button
-                type="button"
-                onClick={() => setTermsModalOpen(true)}
-                className="escrow-badge"
-                style={{ cursor: "pointer", border: "none" }}
-                title="View Community Protection Reserve Terms"
-              >
-                Protection mechanism • subject to terms
-              </button>
+              <div className="escrow-badge">
+                Protection mechanism • subject to consultation terms
+              </div>
             </div>
           </div>
         </section>
@@ -356,21 +341,21 @@ export default function Home() {
             <div className="grid-3">
               <div className="card finance-card">
                 <div className="icon">⌂</div>
-                <h3>Home Energy Loan</h3>
-                <p>Explore green loan options through a bank or mortgage provider.</p>
-                <div className="rate">Home-loan pathway</div>
+                <h3>Bank &amp; Green Home Loans</h3>
+                <p>Explore low-rate bank pathways including CommBank Home Energy Loans and NAB or Westpac Green Mortgage Top-Ups.</p>
+                <div className="rate">CommBank · NAB · Westpac</div>
               </div>
               <div className="card finance-card">
                 <div className="icon">◎</div>
-                <h3>Green Mortgage Top-Up</h3>
-                <p>Use available equity or an existing home loan structure where suitable.</p>
-                <div className="rate">Flexible structure</div>
+                <h3>Specialist Solar Finance</h3>
+                <p>Dedicated green loans and interest-free solar payment plans through Australia&apos;s leading clean-energy lenders.</p>
+                <div className="rate">Plenti · Brighte · Humm · Green Loans</div>
               </div>
               <div className="card finance-card">
                 <div className="icon">▣</div>
-                <h3>Unsecured Option</h3>
-                <p>For homeowners who want a specialist application rather than a home-loan route.</p>
-                <div className="rate">Specialist finance</div>
+                <h3>Upfront Cash &amp; Direct EFT</h3>
+                <p>Zero lender or dealer fees. Settle directly at our baseline cash build price with complete cost transparency.</p>
+                <div className="rate">0% Dealer Fee · Direct Cash</div>
               </div>
             </div>
             <p className="finance-note">Rates, establishment fees, eligibility and lender availability vary by provider. Finance is optional and evaluated separately from system engineering.</p>
@@ -417,7 +402,7 @@ export default function Home() {
           <div className="container cta-wrap">
             <div>
               <div className="eyebrow">Take the first step</div>
-              <h2 className="serif">Get the system designed before you buy it.</h2>
+              <h2 className="serif">Have the protection before you buy it.</h2>
               <p>Start with a short WA homeowner assessment. The output is the project brief the rest of the process works from.</p>
             </div>
             <Link className="btn btn-accent" href="/assessment">
