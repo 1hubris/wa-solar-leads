@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ShieldCheck,
   Clock,
@@ -111,8 +111,9 @@ export default function Marketplace() {
   const [isPartnerVerified, setIsPartnerVerified] = useState(false);
   const [partnerCodeInput, setPartnerCodeInput] = useState("");
   const [partnerCodeError, setPartnerCodeError] = useState(false);
+  const verifiedPartnerCodeRef = useRef("");
 
-  const getPartnerAuthHeader = () => partnerCodeInput.trim();
+  const getPartnerAuthHeader = () => verifiedPartnerCodeRef.current;
 
   // Fetch live market data from API
   const fetchTenderData = async () => {
@@ -329,8 +330,10 @@ export default function Marketplace() {
 
   const handlePartnerAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    const role = await verifyAccessCode(partnerCodeInput);
-    if (role !== null) {
+    const trimmed = partnerCodeInput.trim();
+    const role = await verifyAccessCode(trimmed);
+    if (role === "admin" || role === "partner") {
+      verifiedPartnerCodeRef.current = trimmed;
       setIsPartnerVerified(true);
       setPartnerCodeError(false);
     } else {

@@ -22,8 +22,9 @@ function sanitizeSheetCell(val: string) {
   return trimmed;
 }
 
-function isAuthorizedRequest(req: Request): boolean {
-  return resolveRole(req) !== null;
+function isAuthorizedConsultantOrAdmin(req: Request): boolean {
+  const role = resolveRole(req);
+  return role === "admin" || role === "consultant";
 }
 
 export interface StoredLeadRecord {
@@ -66,7 +67,7 @@ const LeadSchema = z.object({
  * Enforces Law 21 & Law 24 (server-side authorization before returning any consumer PII).
  */
 export async function GET(request: Request) {
-  if (!isAuthorizedRequest(request)) {
+  if (!isAuthorizedConsultantOrAdmin(request)) {
     return NextResponse.json(
       { success: false, error: "Unauthorized: valid consultant or admin credentials required." },
       { status: 401 }

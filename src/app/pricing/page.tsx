@@ -226,7 +226,7 @@ export default function PricingCalculator() {
         headers: { 
           "Content-Type": "application/json",
           "Idempotency-Key": `publish-${crypto.randomUUID()}`,
-          "x-sunny-auth": adminPinInput.trim() || consultantCodeInput.trim()
+          "x-sunny-auth": verifiedCodeRef.current
         },
         body: JSON.stringify({
           suburb: "Perth Metro, WA",
@@ -1206,7 +1206,7 @@ export default function PricingCalculator() {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      'x-sunny-auth': adminPinInput.trim() || consultantCodeInput.trim()
+                      'x-sunny-auth': verifiedCodeRef.current
                     },
                     body: JSON.stringify({ emailTo, quoteData })
                   });

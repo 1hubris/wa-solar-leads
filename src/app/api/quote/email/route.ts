@@ -19,7 +19,8 @@ const EmailRequestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    if (resolveRole(request) === null) {
+    const role = resolveRole(request);
+    if (role !== 'admin' && role !== 'consultant') {
       return NextResponse.json({ error: 'Unauthorized quote dispatch.' }, { status: 401 });
     }
 
