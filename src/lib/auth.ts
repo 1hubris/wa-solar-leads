@@ -60,7 +60,7 @@ export function resolveRoleFromCode(code: string): Role | null {
 }
 
 /**
- * Reports which role credentials are properly configured with sufficient entropy (booleans only, never values).
+ * Reports whether core authentication tokens are configured with valid entropy.
  */
 export function getAuthConfigStatus(): {
   configured: { admin: boolean; partner: boolean; consultant: boolean };
@@ -71,41 +71,54 @@ export function getAuthConfigStatus(): {
   const consultant = isStrongToken(process.env.SUNNY_CONSULTANT_TOKEN);
   return {
     configured: { admin, partner, consultant },
-    ready: admin && partner && consultant,
+    ready: admin && partner,
   };
 }
 
 /**
- * Bounded per-instance failed-auth throttle.
- * - Evicts expired windows first, then oldest entry once MAX_THROTTLE_KEYS is reached (prevents memory DoS).
- * - Uses platform-verified IP headers before falling back to the last hop of x-forwarded-for.
- * - When no IP header exists, keys by a digest prefix of the presented credential so missing-header requests
- *   do not share a single global "unknown" lockout bucket.
+ * Bounded per-instance failed-auth throttle with a global circuit-breaker and lock-preserving eviction.
+ * - Platform IP headers (`x-vercel-forwarded-for`, `cf-connecting-ip`) are trusted ONLY when the corresponding
+ *   platform environment flag (`VERCEL=1` or `CF_PAGES=1`) is set; otherwise falls back to the last hop of
+ *   `x-forwarded-for`, or a single shared `"ip:missing"` bucket when no IP header is present.
+ * - Locked-out entries (`count > MAX_ATTEMPTS`) cannot be evicted before `WINDOW_MS` expires, and a global
+ *   failure counter caps total failed guesses per window across all IPs (`MAX_GLOBAL_FAILURES`).
  */
 const attempts = new Map<string, { count: number; windowStart: number }>();
 const WINDOW_MS = 60_000;
 const MAX_ATTEMPTS = 10;
 export const MAX_THROTTLE_KEYS = 2000;
+export const MAX_GLOBAL_FAILURES = 80;
+let globalWindowStart = 0;
+let globalFailedCount = 0;
 
 function enforceMapCap(now: number): void {
   if (attempts.size < MAX_THROTTLE_KEYS) return;
   for (const [k, v] of attempts) {
     if (now - v.windowStart > WINDOW_MS) attempts.delete(k);
   }
-  while (attempts.size >= MAX_THROTTLE_KEYS) {
+  if (attempts.size < MAX_THROTTLE_KEYS) return;
+  // Evict only non-locked keys first so an attacker cannot push locked-out IPs out of the Map.
+  for (const [k, v] of attempts) {
+    if (v.count <= MAX_ATTEMPTS) {
+      attempts.delete(k);
+      if (attempts.size < MAX_THROTTLE_KEYS) return;
+    }
+  }
+  if (attempts.size >= MAX_THROTTLE_KEYS) {
     const oldest = attempts.keys().next().value;
-    if (oldest === undefined) break;
-    attempts.delete(oldest);
+    if (oldest !== undefined) attempts.delete(oldest);
   }
 }
 
-export function extractClientKey(req: Request, presentedFallback: string = ""): string {
-  const vercelIp = req.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim();
-  if (vercelIp) return `ip:${vercelIp}`;
-  const cfIp = req.headers.get("cf-connecting-ip")?.trim();
-  if (cfIp) return `ip:${cfIp}`;
-  const realIp = req.headers.get("x-real-ip")?.trim();
-  if (realIp) return `ip:${realIp}`;
+export function extractClientKey(req: Request): string {
+  if (process.env.VERCEL === "1") {
+    const vercelIp = req.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim();
+    if (vercelIp) return `ip:${vercelIp}`;
+  }
+  if (process.env.CF_PAGES === "1" || process.env.CLOUDFLARE === "1") {
+    const cfIp = req.headers.get("cf-connecting-ip")?.trim();
+    if (cfIp) return `ip:${cfIp}`;
+  }
   const xff = req.headers.get("x-forwarded-for");
   if (xff) {
     const hops = xff
@@ -114,11 +127,13 @@ export function extractClientKey(req: Request, presentedFallback: string = ""): 
       .filter(Boolean);
     if (hops.length > 0) return `ip:${hops[hops.length - 1]}`;
   }
-  const tokenFingerprint = digest(presentedFallback || "empty").toString("hex").slice(0, 16);
-  return `anon:${tokenFingerprint}`;
+  return "ip:missing";
 }
 
 export function isKeyThrottled(key: string, now: number = Date.now()): boolean {
+  if (now - globalWindowStart <= WINDOW_MS && globalFailedCount >= MAX_GLOBAL_FAILURES) {
+    return true;
+  }
   const entry = attempts.get(key);
   if (!entry) return false;
   if (now - entry.windowStart > WINDOW_MS) {
@@ -129,14 +144,20 @@ export function isKeyThrottled(key: string, now: number = Date.now()): boolean {
 }
 
 export function recordFailedAttempt(key: string, now: number = Date.now()): boolean {
+  if (now - globalWindowStart > WINDOW_MS) {
+    globalWindowStart = now;
+    globalFailedCount = 0;
+  }
+  globalFailedCount += 1;
+
   const entry = attempts.get(key);
   if (!entry || now - entry.windowStart > WINDOW_MS) {
     enforceMapCap(now);
     attempts.set(key, { count: 1, windowStart: now });
-    return false;
+    return globalFailedCount > MAX_GLOBAL_FAILURES;
   }
   entry.count += 1;
-  return entry.count > MAX_ATTEMPTS;
+  return entry.count > MAX_ATTEMPTS || globalFailedCount > MAX_GLOBAL_FAILURES;
 }
 
 export function isThrottled(key: string, now: number = Date.now()): boolean {
@@ -149,16 +170,18 @@ export function getThrottleMapSize(): number {
 
 export function resetThrottleForTests(): void {
   attempts.clear();
+  globalWindowStart = 0;
+  globalFailedCount = 0;
 }
 
 /**
  * Resolves the caller's role from `x-sunny-auth`, enforcing the failed-attempt throttle on every route.
- * Successful authentications do NOT increment the failure counter; throttled keys return null even if valid.
+ * Uses a unified key namespace with `/api/auth/verify` so an IP shares one failure budget across all endpoints.
  */
 export function resolveRole(req: Request, now: number = Date.now()): Role | null {
   const rawCode = (req.headers.get("x-sunny-auth") || "").trim();
   if (!rawCode) return null;
-  const key = extractClientKey(req, rawCode);
+  const key = extractClientKey(req);
   if (isKeyThrottled(key, now)) return null;
   const role = resolveRoleFromCode(rawCode);
   if (!role) {

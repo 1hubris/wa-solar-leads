@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
 import { QuoteData } from '@/lib/types';
-import { resolveRole } from '@/lib/auth';
+import { extractClientKey, isThrottled, resolveRole } from '@/lib/auth';
 
 function escapeHtml(unsafe: string): string {
   return String(unsafe || '')
@@ -22,6 +22,9 @@ export async function POST(request: Request) {
     const role = resolveRole(request);
     if (role !== 'admin' && role !== 'consultant') {
       return NextResponse.json({ error: 'Unauthorized quote dispatch.' }, { status: 401 });
+    }
+    if (isThrottled(`email:${extractClientKey(request)}`)) {
+      return NextResponse.json({ error: 'Quote email rate limit exceeded. Please wait a minute.' }, { status: 429 });
     }
 
     const body = await request.json();

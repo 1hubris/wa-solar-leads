@@ -255,7 +255,17 @@ test("throttle blocks after 10 failed attempts on resolveRole, caps Map memory a
         "x-sunny-auth": "wrong-attempt",
       },
     });
-    assert.equal(extractClientKey(spoofedReq, "wrong-attempt"), "ip:198.51.100.77");
+    assert.equal(extractClientKey(spoofedReq), "ip:198.51.100.77");
+
+    // Off-Vercel, a spoofed x-vercel-forwarded-for header is ignored in favor of last XFF hop (N1 fix)
+    const spoofedVercelHeaderReq = new Request("https://example.com/api/tender", {
+      headers: {
+        "x-vercel-forwarded-for": "8.8.8.8",
+        "x-forwarded-for": "1.2.3.4, 198.51.100.77",
+        "x-sunny-auth": "wrong-attempt",
+      },
+    });
+    assert.equal(extractClientKey(spoofedVercelHeaderReq), "ip:198.51.100.77");
 
     // 10 failed attempts from 198.51.100.77 trigger throttle; 11th attempt even with valid token is blocked
     for (let i = 0; i < 10; i++) {

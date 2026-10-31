@@ -13,17 +13,16 @@ export const dynamic = "force-dynamic";
 const VerifySchema = z.object({ code: z.string().min(1).max(200) });
 
 /**
- * Non-secret health/readiness endpoint reporting which role tokens are configured with valid entropy.
- * Never returns secret values or lengths.
+ * Non-secret readiness endpoint reporting whether core authentication is configured.
+ * Does not enumerate individual role configuration to unauthenticated callers.
  */
 export async function GET() {
   const status = getAuthConfigStatus();
-  return NextResponse.json(status, { status: status.ready ? 200 : 503 });
+  return NextResponse.json({ ready: status.ready }, { status: status.ready ? 200 : 503 });
 }
 
 /**
- * Server-side access-code check. The browser never holds or compares secrets; it submits the
- * code the user typed and receives only the resolved role.
+ * Server-side access-code check. Shares the exact same throttle key namespace as resolveRole(req).
  */
 export async function POST(req: Request) {
   let parsed;
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
   }
 
   const code = parsed.data.code.trim();
-  const clientKey = `verify:${extractClientKey(req, code)}`;
+  const clientKey = extractClientKey(req);
   if (isKeyThrottled(clientKey)) {
     return NextResponse.json(
       { success: false, error: "Too many attempts. Please wait a minute and try again." },

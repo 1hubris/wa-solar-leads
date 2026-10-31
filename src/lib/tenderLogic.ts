@@ -380,7 +380,7 @@ export async function handleTenderPost(
 
           const job = await tx.tenderJob.findUnique({ where: { id: existingVar.jobId } });
           if (!job) throw new Error("ALREADY_RESOLVED");
-          if (job.status === "Settled") throw new Error("JOB_SETTLED");
+          if (job.status === "Settled" && decision === "approve") throw new Error("JOB_SETTLED");
 
           const resolved = await tx.variation.updateMany({
             where: { id: variationId, status: "Pending Review" },
