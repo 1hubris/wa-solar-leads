@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Calculator, DollarSign, ShieldCheck, Wrench, Settings, Users, ArrowUpRight, CreditCard, PlusCircle, Package, Download, Mail, Activity, Check } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { CustomerQuoteTemplate, InstallerWorkOrderTemplate, CustomerTermsTemplate } from "@/components/QuotePDFTemplates";
 import { usePricingEngine } from "@/hooks/usePricingEngine";
+import { verifyAccessCode } from "@/lib/clientAuth";
 
 interface CapturedLeadItem {
   leadRef: string;
@@ -58,17 +59,21 @@ export default function PricingCalculator() {
   const [adminPinInput, setAdminPinInput] = useState("");
   const [adminPinError, setAdminPinError] = useState(false);
 
-  const handleConsultantLogin = (e: React.FormEvent) => {
+  // Holds the access code the SERVER has accepted (never compared or stored in the client bundle).
+  const verifiedCodeRef = useRef("");
+
+  const handleConsultantLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const code = consultantCodeInput.trim().toUpperCase();
-    const expectedAdmin = (process.env.NEXT_PUBLIC_ADMIN_PIN || "2026").toUpperCase();
-    const expectedConsultant = (process.env.NEXT_PUBLIC_CONSULTANT_PIN || process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX").toUpperCase();
-    if (code === expectedAdmin) {
+    const code = consultantCodeInput.trim();
+    const role = await verifyAccessCode(code);
+    if (role === "admin") {
+      verifiedCodeRef.current = code;
       setIsConsultantVerified(true);
       setIsAdminUnlocked(true);
-      setAdminPinInput(consultantCodeInput.trim());
+      setAdminPinInput(code);
       setConsultantCodeError(false);
-    } else if (code === expectedConsultant || code === "CONSULTANT") {
+    } else if (role === "partner" || role === "consultant") {
+      verifiedCodeRef.current = code;
       setIsConsultantVerified(true);
       setViewMode("Consultant");
       setConsultantCodeError(false);
@@ -87,9 +92,11 @@ export default function PricingCalculator() {
     }
   };
 
-  const handleVerifyAdminPin = () => {
-    const expectedPin = process.env.NEXT_PUBLIC_ADMIN_PIN || "2026";
-    if (adminPinInput.trim() === expectedPin) {
+  const handleVerifyAdminPin = async () => {
+    const code = adminPinInput.trim();
+    const role = await verifyAccessCode(code);
+    if (role === "admin") {
+      verifiedCodeRef.current = code;
       setIsAdminUnlocked(true);
       setViewMode("Admin");
       setShowAdminPinModal(false);
@@ -154,24 +161,27 @@ export default function PricingCalculator() {
       }
     }
 
-    try {
-      const res = await fetch("/api/leads", {
-        headers: {
-          "x-sunny-auth": process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX"
-        }
-      });
-      if (res.ok) {
-        const payload = await res.json();
-        if (Array.isArray(payload.leads)) {
-          for (const item of payload.leads) {
-            if (item && typeof item.leadRef === "string") {
-              mergedMap.set(item.leadRef, item as CapturedLeadItem);
+    const verifiedCode = verifiedCodeRef.current;
+    if (verifiedCode) {
+      try {
+        const res = await fetch("/api/leads", {
+          headers: {
+            "x-sunny-auth": verifiedCode
+          }
+        });
+        if (res.ok) {
+          const payload = await res.json();
+          if (Array.isArray(payload.leads)) {
+            for (const item of payload.leads) {
+              if (item && typeof item.leadRef === "string") {
+                mergedMap.set(item.leadRef, item as CapturedLeadItem);
+              }
             }
           }
         }
+      } catch {
+        // Offline / local fallback already populated
       }
-    } catch {
-      // Offline / local fallback already populated
     }
 
     setCapturedLeads(Array.from(mergedMap.values()));
@@ -179,7 +189,7 @@ export default function PricingCalculator() {
 
   useEffect(() => {
     fetchCapturedLeads();
-  }, [fetchCapturedLeads]);
+  }, [fetchCapturedLeads, isConsultantVerified]);
 
   const applyCapturedLead = (lead: CapturedLeadItem) => {
     setActiveLeadRef(lead.leadRef);
@@ -216,7 +226,7 @@ export default function PricingCalculator() {
         headers: { 
           "Content-Type": "application/json",
           "Idempotency-Key": `publish-${crypto.randomUUID()}`,
-          "x-sunny-auth": adminPinInput.trim() || consultantCodeInput.trim() || process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX"
+          "x-sunny-auth": adminPinInput.trim() || consultantCodeInput.trim()
         },
         body: JSON.stringify({
           suburb: "Perth Metro, WA",
@@ -1196,7 +1206,7 @@ export default function PricingCalculator() {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      'x-sunny-auth': adminPinInput.trim() || process.env.NEXT_PUBLIC_ADMIN_PIN || '2026'
+                      'x-sunny-auth': adminPinInput.trim() || consultantCodeInput.trim()
                     },
                     body: JSON.stringify({ emailTo, quoteData })
                   });

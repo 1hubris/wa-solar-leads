@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
 import { QuoteData } from '@/lib/types';
+import { resolveRole } from '@/lib/auth';
 
 function escapeHtml(unsafe: string): string {
   return String(unsafe || '')
@@ -18,10 +19,7 @@ const EmailRequestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get('x-sunny-auth') || '';
-    const expectedAdmin = process.env.SUNNY_API_TOKEN || process.env.NEXT_PUBLIC_ADMIN_PIN || '2026';
-    const expectedPartner = process.env.NEXT_PUBLIC_PARTNER_CODE || 'SUNNYEX';
-    if (authHeader !== expectedAdmin && authHeader !== expectedPartner) {
+    if (resolveRole(request) === null) {
       return NextResponse.json({ error: 'Unauthorized quote dispatch.' }, { status: 401 });
     }
 

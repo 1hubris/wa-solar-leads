@@ -33,6 +33,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { InstallerWorkOrderTemplate } from "@/components/QuotePDFTemplates";
 import { QuoteData } from "@/lib/types";
+import { verifyAccessCode } from "@/lib/clientAuth";
 
 type TenderJob = {
   id: string;
@@ -111,8 +112,7 @@ export default function Marketplace() {
   const [partnerCodeInput, setPartnerCodeInput] = useState("");
   const [partnerCodeError, setPartnerCodeError] = useState(false);
 
-  const getPartnerAuthHeader = () =>
-    partnerCodeInput.trim() || process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX";
+  const getPartnerAuthHeader = () => partnerCodeInput.trim();
 
   // Fetch live market data from API
   const fetchTenderData = async () => {
@@ -327,12 +327,10 @@ export default function Marketplace() {
     return a.timeRemaining.localeCompare(b.timeRemaining);
   });
 
-  const handlePartnerAuth = (e: React.FormEvent) => {
+  const handlePartnerAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    const code = partnerCodeInput.trim().toUpperCase();
-    const expectedAdmin = (process.env.NEXT_PUBLIC_ADMIN_PIN || "2026").toUpperCase();
-    const expectedPartner = (process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX").toUpperCase();
-    if (code === expectedPartner || code === expectedAdmin) {
+    const role = await verifyAccessCode(partnerCodeInput);
+    if (role !== null) {
       setIsPartnerVerified(true);
       setPartnerCodeError(false);
     } else {

@@ -2,24 +2,20 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { createHash } from "crypto";
+import { resolveRole } from "@/lib/auth";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const prisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 function isAuthorizedRequest(req: Request): boolean {
-  const authHeader = (req.headers.get("x-sunny-auth") || "").trim().toUpperCase();
-  const expectedAdmin = (process.env.SUNNY_API_TOKEN || process.env.NEXT_PUBLIC_ADMIN_PIN || "2026").toUpperCase();
-  const expectedPartner = (process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX").toUpperCase();
-  const expectedConsultant = (process.env.NEXT_PUBLIC_CONSULTANT_PIN || "CONSULTANT").toUpperCase();
-  return Boolean(
-    authHeader &&
-      (authHeader === expectedAdmin ||
-        authHeader === expectedPartner ||
-        authHeader === expectedConsultant ||
-        authHeader === "EC-094")
-  );
+  return resolveRole(req) !== null;
 }
+
+// Job lifecycle. Non-admin callers may only advance one step at a time and can never settle.
+const STATUS_ORDER = ["Available", "Claimed", "Site Inspected", "Installed", "STCs Lodged", "Settled"] as const;
+const MAX_CUMULATIVE_APPROVED_VARIATION = 15000;
 
 // --- ZOD SCHEMAS FOR ZERO-TRUST INGRESS ---
 const ClaimSchema = z.object({
@@ -39,6 +35,12 @@ const UpdateStatusSchema = z.object({
   action: z.literal("update_status"),
   jobId: z.string().min(1).max(64),
   status: z.enum(["Claimed", "Site Inspected", "Installed", "STCs Lodged", "Settled"]),
+});
+
+const ApproveVariationSchema = z.object({
+  action: z.literal("approve_variation"),
+  variationId: z.string().min(1).max(64),
+  decision: z.enum(["approve", "reject"]),
 });
 
 const PublishSchema = z.object({
@@ -125,7 +127,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    if (!isAuthorizedRequest(req)) {
+    const role = resolveRole(req);
+    if (role === null) {
       return NextResponse.json(
         { success: false, error: "Unauthorized: valid partner or admin credentials required." },
         { status: 401 }
@@ -178,10 +181,27 @@ export async function POST(req: Request) {
     if (body.action === "add_variation") {
       const parsed = VariationSchema.parse(body);
       const { jobId, reason, amount } = parsed;
-      const varId = `VAR-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
-      const [, updated] = await prisma.$transaction([
-        prisma.variation.create({
+      const job = await prisma.tenderJob.findUnique({ where: { id: jobId }, select: { status: true } });
+      if (!job) {
+        return NextResponse.json({ success: false, error: "Contract not found." }, { status: 404 });
+      }
+      if (job.status === "Available") {
+        return NextResponse.json(
+          { success: false, error: "Variations can only be raised on a claimed contract." },
+          { status: 409 }
+        );
+      }
+
+      // DB-enforced idempotency: the variation id is derived from the Idempotency-Key, so a retry
+      // collides on the primary key (P2002) instead of creating a duplicate.
+      const varId = idempotencyKey
+        ? `VAR-${createHash("sha256").update(`${jobId}:${idempotencyKey}`).digest("hex").slice(0, 16).toUpperCase()}`
+        : `VAR-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+
+      try {
+        // Money-state is NOT touched here. Payout only changes when an admin approves (approve_variation).
+        await prisma.variation.create({
           data: {
             id: varId,
             reason,
@@ -190,27 +210,98 @@ export async function POST(req: Request) {
             createdAt: new Date().toISOString(),
             jobId,
           },
-        }),
-        prisma.tenderJob.update({
-          where: { id: jobId },
-          data: {
-            payout: { increment: amount },
-          },
-          include: { customer: true, variations: true },
-        }),
-      ]);
+        });
+      } catch (e: unknown) {
+        if ((e as { code?: string })?.code !== "P2002") throw e;
+      }
 
+      const updated = await prisma.tenderJob.findUnique({
+        where: { id: jobId },
+        include: { customer: true, variations: true },
+      });
       recordIdempotencySuccess(idempotencyKey);
       return NextResponse.json({
         success: true,
-        message: "Variation recorded and submitted for review.",
-        data: serializeJob(updated, false),
+        message: "Variation recorded. The contract payout is unchanged until an admin approves it.",
+        data: updated ? serializeJob(updated, false) : null,
       });
+    }
+
+    if (body.action === "approve_variation") {
+      if (role !== "admin") {
+        return NextResponse.json(
+          { success: false, error: "Forbidden: only an admin can resolve variations." },
+          { status: 403 }
+        );
+      }
+      const { variationId, decision } = ApproveVariationSchema.parse(body);
+
+      try {
+        const result = await prisma.$transaction(async (tx) => {
+          const resolved = await tx.variation.updateMany({
+            where: { id: variationId, status: "Pending Review" },
+            data: { status: decision === "approve" ? "Approved" : "Rejected" },
+          });
+          if (resolved.count !== 1) throw new Error("ALREADY_RESOLVED");
+
+          const variation = await tx.variation.findUniqueOrThrow({ where: { id: variationId } });
+          if (decision === "approve") {
+            const approved = await tx.variation.findMany({
+              where: { jobId: variation.jobId, status: "Approved" },
+              select: { amount: true },
+            });
+            const cumulative = approved.reduce((sum, v) => sum + Math.abs(v.amount), 0);
+            if (cumulative > MAX_CUMULATIVE_APPROVED_VARIATION) throw new Error("CUMULATIVE_CAP");
+            await tx.tenderJob.update({
+              where: { id: variation.jobId },
+              data: { payout: { increment: variation.amount } },
+            });
+          }
+          return tx.tenderJob.findUniqueOrThrow({
+            where: { id: variation.jobId },
+            include: { customer: true, variations: true },
+          });
+        });
+        recordIdempotencySuccess(idempotencyKey);
+        return NextResponse.json({ success: true, data: serializeJob(result, false) });
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "";
+        if (message === "ALREADY_RESOLVED") {
+          return NextResponse.json(
+            { success: false, error: "That variation has already been resolved or does not exist." },
+            { status: 409 }
+          );
+        }
+        if (message === "CUMULATIVE_CAP") {
+          return NextResponse.json(
+            { success: false, error: "Approving this would exceed the cumulative variation cap for the contract." },
+            { status: 422 }
+          );
+        }
+        throw e;
+      }
     }
 
     if (body.action === "update_status") {
       const parsed = UpdateStatusSchema.parse(body);
       const { jobId, status } = parsed;
+
+      const current = await prisma.tenderJob.findUnique({ where: { id: jobId }, select: { status: true } });
+      if (!current) {
+        return NextResponse.json({ success: false, error: "Contract not found." }, { status: 404 });
+      }
+      if (role !== "admin") {
+        const from = STATUS_ORDER.indexOf(current.status as (typeof STATUS_ORDER)[number]);
+        const to = STATUS_ORDER.indexOf(status);
+        const isSingleForwardStep = from >= 1 && to === from + 1;
+        if (status === "Settled" || !isSingleForwardStep) {
+          return NextResponse.json(
+            { success: false, error: "That status change needs an admin. Partners can advance one step at a time." },
+            { status: 403 }
+          );
+        }
+      }
+
       const updated = await prisma.tenderJob.update({
         where: { id: jobId },
         data: { status },

@@ -46,3 +46,5 @@ next-env.d.ts
 *.db-journal
 *.csv
 .verify/
+# python bytecode (created by tools/verify.js py_compile)
+__pycache__/

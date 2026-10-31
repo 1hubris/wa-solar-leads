@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import nodemailer from "nodemailer";
+import { resolveRole } from "@/lib/auth";
 
 // Basic HTML sanitizer to prevent XSS in email templates
 function escapeHtml(unsafe: string) {
@@ -22,10 +23,7 @@ function sanitizeSheetCell(val: string) {
 }
 
 function isAuthorizedRequest(req: Request): boolean {
-  const authHeader = (req.headers.get("x-sunny-auth") || "").trim().toUpperCase();
-  const expectedAdmin = (process.env.SUNNY_API_TOKEN || process.env.NEXT_PUBLIC_ADMIN_PIN || "2026").toUpperCase();
-  const expectedPartner = (process.env.NEXT_PUBLIC_PARTNER_CODE || "SUNNYEX").toUpperCase();
-  return Boolean(authHeader && (authHeader === expectedAdmin || authHeader === expectedPartner));
+  return resolveRole(req) !== null;
 }
 
 export interface StoredLeadRecord {
