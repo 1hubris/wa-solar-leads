@@ -18,6 +18,13 @@ import {
   type TenderJobRecord,
   type VariationRecord,
 } from "./tenderLogic.ts";
+import {
+  calculateWaStateBatteryRebate,
+  handleLeadGet,
+  persistLeadRecord,
+  type LeadDb,
+  type StoredLeadRecord,
+} from "./leadLogic.ts";
 
 const STRONG_ADMIN = "adm-9f3k2-strong-token-2026-x9";
 const STRONG_PARTNER = "ptn-7h1q8-strong-token-2026-y8";
@@ -481,4 +488,134 @@ test("concurrency guard: if job payout mutates between read and conditional upda
     null
   );
   assert.equal(raced.status, 409);
+});
+
+test("calculateWaStateBatteryRebate scales per usable kWh up to 10 kWh cap ($130/kWh Synergy, $380/kWh Horizon) (S5 fix)", () => {
+  // Zero / negative / NaN
+  assert.equal(calculateWaStateBatteryRebate(0, "Synergy"), 0);
+  assert.equal(calculateWaStateBatteryRebate(-5, "Synergy"), 0);
+  assert.equal(calculateWaStateBatteryRebate(Number.NaN, "Synergy"), 0);
+
+  // Synergy: $130/kWh up to 10 kWh ($1,300 max)
+  assert.equal(calculateWaStateBatteryRebate(5, "Synergy"), 650);
+  assert.equal(calculateWaStateBatteryRebate(9.6, "Synergy"), 1248);
+  assert.equal(calculateWaStateBatteryRebate(10, "Synergy"), 1300);
+  assert.equal(calculateWaStateBatteryRebate(13.5, "Synergy"), 1300);
+  assert.equal(calculateWaStateBatteryRebate(20, "Synergy"), 1300);
+
+  // Horizon Power: $380/kWh up to 10 kWh ($3,800 max)
+  assert.equal(calculateWaStateBatteryRebate(5, "Horizon"), 1900);
+  assert.equal(calculateWaStateBatteryRebate(10, "Horizon"), 3800);
+  assert.equal(calculateWaStateBatteryRebate(15, "Horizon"), 3800);
+
+  // Unknown retailer returns 0
+  assert.equal(calculateWaStateBatteryRebate(10, "Other"), 0);
+});
+
+test("lead persistence and rate-limiting: durable DB + fallback merge, auth guard on GET, and 10/min IP throttle on POST (S4 fix)", async () => {
+  await withEnv(
+    {
+      SUNNY_ADMIN_TOKEN: STRONG_ADMIN,
+      SUNNY_PARTNER_TOKEN: STRONG_PARTNER,
+      SUNNY_CONSULTANT_TOKEN: STRONG_CONSULTANT,
+    },
+    async () => {
+      const dbRows: StoredLeadRecord[] = [];
+      const fallbackStore: StoredLeadRecord[] = [];
+      const fakeLeadDb: LeadDb = {
+        lead: {
+          async findMany({ take }) {
+            return dbRows.slice(0, take);
+          },
+          async create({ data }) {
+            dbRows.unshift({ ...data });
+            return { ...data };
+          },
+        },
+      };
+
+      const validPayload = {
+        homeowner: true,
+        existingSystem: "6.6kW Solar Only",
+        billSize: 520,
+        address: "42 Riverside Drive, Perth WA 6000",
+        name: "Liam Homeowner",
+        mobile: "0412 345 678",
+        email: "liam@example.com",
+        roofType: "Colorbond",
+        phasing: "Single Phase",
+        notes: "Afternoon western roof",
+      };
+
+      const postReq = new Request("https://example.com/api/leads", {
+        method: "POST",
+        headers: { "x-forwarded-for": "203.0.113.55" },
+      });
+
+      // 1. Valid POST persists to both LeadDb and fallbackStore
+      const saved = await persistLeadRecord(fakeLeadDb, fallbackStore, postReq, validPayload);
+      assert.equal(saved.ok, true);
+      if (saved.ok) {
+        assert.equal(saved.dbPersisted, true);
+        assert.equal(dbRows.length, 1);
+        assert.equal(fallbackStore.length, 1);
+        assert.equal(saved.record.name, "Liam Homeowner");
+      }
+
+      // 2. Invalid phone/email returns 400
+      const invalidRes = await persistLeadRecord(fakeLeadDb, fallbackStore, postReq, {
+        ...validPayload,
+        email: "not-an-email",
+      });
+      assert.equal(invalidRes.ok, false);
+      if (!invalidRes.ok) {
+        assert.equal(invalidRes.status, 400);
+      }
+
+      // 3. Unauthorized or Partner GET is rejected with 401
+      const unauthGet = await handleLeadGet(
+        fakeLeadDb,
+        fallbackStore,
+        new Request("https://example.com/api/leads")
+      );
+      assert.equal(unauthGet.status, 401);
+
+      const partnerGet = await handleLeadGet(
+        fakeLeadDb,
+        fallbackStore,
+        new Request("https://example.com/api/leads", {
+          headers: { "x-sunny-auth": STRONG_PARTNER },
+        })
+      );
+      assert.equal(partnerGet.status, 401);
+
+      // 4. Consultant GET returns deduplicated merged list (DB + fallback)
+      const consultantGet = await handleLeadGet(
+        fakeLeadDb,
+        fallbackStore,
+        new Request("https://example.com/api/leads", {
+          headers: { "x-sunny-auth": STRONG_CONSULTANT },
+        })
+      );
+      assert.equal(consultantGet.status, 200);
+      const returnedLeads = consultantGet.body.leads as StoredLeadRecord[];
+      assert.equal(returnedLeads.length, 1);
+      assert.equal(returnedLeads[0].email, "liam@example.com");
+
+      // 5. Public POST rate-limiting blocks after 10 submissions from the same IP within 60s
+      const spamReq = new Request("https://example.com/api/leads", {
+        method: "POST",
+        headers: { "x-forwarded-for": "198.51.100.200" },
+      });
+      for (let i = 0; i < 10; i++) {
+        const res = await persistLeadRecord(fakeLeadDb, fallbackStore, spamReq, validPayload);
+        assert.equal(res.ok, true, `submission ${i + 1} should succeed`);
+      }
+      const eleventh = await persistLeadRecord(fakeLeadDb, fallbackStore, spamReq, validPayload);
+      assert.equal(eleventh.ok, false);
+      if (!eleventh.ok) {
+        assert.equal(eleventh.status, 429);
+      }
+    }
+  );
 });

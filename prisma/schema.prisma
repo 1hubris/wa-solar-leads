@@ -56,3 +56,18 @@ model Variation {
   jobId       String
   job         TenderJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 }
+
+model Lead {
+  leadRef        String   @id
+  createdAt      String
+  homeowner      Boolean  @default(true)
+  existingSystem String   @default("None")
+  billSize       Float    @default(400)
+  address        String
+  name           String
+  mobile         String
+  email          String
+  roofType       String   @default("Not specified")
+  phasing        String   @default("Not specified")
+  notes          String   @default("Web Assessment Form")
+}

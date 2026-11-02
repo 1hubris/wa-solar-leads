@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { QuoteData } from "@/lib/types";
+import { calculateWaStateBatteryRebate } from "@/lib/leadLogic";
 
 /**
  * Commonwealth Cheaper Home Batteries Program (May–Dec 2026 CER Tiered Tapering Formula)
@@ -100,11 +101,8 @@ export function usePricingEngine() {
   const batteryCertificates = calculateBatteryStcs2026(batterySize);
   const batteryStcDiscount = batteryCertificates * batteryStcValue;
 
-  let stateBatteryRebate = 0;
-  if (batterySize > 0) {
-    if (waRetailer === "Synergy") stateBatteryRebate = 1300;
-    if (waRetailer === "Horizon") stateBatteryRebate = 3800;
-  }
+  // WA Residential Battery Scheme per-kWh rebate ($130/kWh Synergy, $380/kWh Horizon, capped at 10 kWh)
+  const stateBatteryRebate = calculateWaStateBatteryRebate(batterySize, waRetailer);
 
   const totalRebates = pvStcDiscount + batteryStcDiscount + stateBatteryRebate;
 
