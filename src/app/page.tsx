@@ -402,8 +402,8 @@ export default function Home() {
           <div className="container cta-wrap">
             <div>
               <div className="eyebrow">Take the first step</div>
-              <h2 className="serif">Have the protection before you buy it.</h2>
-              <p>Start with a short WA homeowner assessment. The output is the project brief the rest of the process works from.</p>
+              <h2 className="serif">Designed with you in mind.</h2>
+              <p>Start with a short WA homeowner assessment. We engineer the right system around your household, lock in transparent pricing, and match your build to a vetted local electrical company—backed by our Community Protection Reserve.</p>
             </div>
             <Link className="btn btn-accent" href="/assessment">
               Start My Solar Assessment →
