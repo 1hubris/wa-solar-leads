@@ -228,45 +228,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SunnyEX Tender Board */}
-        <section className="section">
-          <div className="container market-shell">
-            <div>
-              <div className="eyebrow">Private installer dispatch</div>
-              <h2 className="serif" style={{ fontSize: "clamp(46px,5vw,70px)", lineHeight: 1.02, margin: "20px 0" }}>
-                Your quote isn't sent to three salespeople.
-              </h2>
-              <p className="hero-lead" style={{ fontSize: "18px" }}>
-                Once your system is designed with our in-house consultant and priced transparently, it enters our private commercial marketplace where vetted WA electrical companies claim jobs that fit their capacity.
-              </p>
-            </div>
-
-            <div className="market-card">
-              <div className="market-card-top">
-                <div className="market-id">Project #SSQ-1047</div>
-                <div className="pill-live">Private Tender</div>
-              </div>
-              <div className="market-title">Perth Metro · Tile Roof · 3 Phase</div>
-              <div className="market-meta">
-                <span>13 × 475W</span>
-                <span>Hybrid Inverter</span>
-                <span>Battery</span>
-                <span>Removal</span>
-              </div>
-              <div className="market-price">
-                <div>
-                  <small>Contract specification</small>
-                  <strong style={{ fontSize: "20px" }}>Fixed-Price · Rebate-Adjusted</strong>
-                </div>
-                <span className="btn btn-accent" style={{ pointerEvents: "none", cursor: "default" }}>Vetted Partners Only</span>
-              </div>
-              <div style={{ marginTop: "16px", fontSize: "11px", color: "#9eb0af" }}>
-                Private B2B dispatch terminal — Homeowner contact details remain strictly private until a single vetted WA electrical contractor accepts your work order.
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Vetted WA Installer Network */}
         <section id="network" className="section" style={{ background: "#f4f0e8" }}>
           <div className="container network">
