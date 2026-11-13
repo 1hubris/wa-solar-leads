@@ -233,7 +233,7 @@ export default function Home() {
             <div>
               <div className="eyebrow">Vetted WA installer network</div>
               <h2 className="serif" style={{ fontSize: "clamp(44px,5vw,68px)", lineHeight: 1.02, margin: "18px 0" }}>
-                Then the build goes to the right installer.
+                Now the build goes to the right installer.
               </h2>
               <p className="hero-lead" style={{ fontSize: "17px" }}>
                 Your project is matched to a suitable electrical company based on location, system complexity and job requirements. Not a public directory — a controlled network.
