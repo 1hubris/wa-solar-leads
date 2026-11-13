@@ -293,7 +293,7 @@ export default function Home() {
               <div className="node"><small>4. WA Service Zone</small><b>Local Crew &amp; Suburb Coverage</b></div>
               <div className="node"><small>Vetted Licence Gate</small><b>CEC-Accredited WA Electrical Company</b></div>
               <div className="node"><small>Proven Track Record</small><b>4.4★+ Rating &amp; 65+ Reviews</b></div>
-              <div className="node"><small>Warranty &amp; Capacity</small><b>10-Yr Workmanship &amp; Ready Crew</b></div>
+              <div className="node"><small>Warranty Coverage</small><b>Product and Workmanship Warranties</b></div>
             </div>
           </div>
         </section>
