@@ -25,7 +25,6 @@ export default function Home() {
             <a href="#process">How It Works</a>
             <a href="#philosophy">Why Us</a>
             <a href="#network">Installer Network</a>
-            <a href="#finance">Finance</a>
             <a href="#escrow">Warranty Reserve</a>
           </nav>
 
@@ -289,75 +288,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Finance Section */}
-        <section id="finance" className="section finance">
-          <div className="container">
-            <div className="kicker-row">
-              <div>
-                <div className="eyebrow">Finance without the sales trap</div>
-                <h2 className="serif">Choose how you pay.<br />Not which salesperson you get.</h2>
-              </div>
-              <p>Keep the system design and cash build price transparent before selecting how to fund it. Explore home-loan pathways or specialist green finance with full fee visibility.</p>
-            </div>
-            <div className="grid-3">
-              <div className="card finance-card">
-                <div className="icon">⌂</div>
-                <h3>Bank &amp; Green Home Loans</h3>
-                <p>Explore low-rate bank pathways including CommBank Home Energy Loans and NAB or Westpac Green Mortgage Top-Ups.</p>
-                <div className="rate">CommBank · NAB · Westpac</div>
-              </div>
-              <div className="card finance-card">
-                <div className="icon">◎</div>
-                <h3>Specialist Solar Finance</h3>
-                <p>Dedicated green loans and interest-free solar payment plans through Australia&apos;s leading clean-energy lenders.</p>
-                <div className="rate">Plenti · Brighte · Humm · Green Loans</div>
-              </div>
-              <div className="card finance-card">
-                <div className="icon">▣</div>
-                <h3>Upfront Cash &amp; Direct EFT</h3>
-                <p>Zero lender or dealer fees. Settle directly at our baseline cash build price with complete cost transparency.</p>
-                <div className="rate">0% Dealer Fee · Direct Cash</div>
-              </div>
-            </div>
-            <p className="finance-note">Rates, establishment fees, eligibility and lender availability vary by provider. Finance is optional and evaluated separately from system engineering.</p>
-          </div>
-        </section>
-
-        {/* What You Actually Get */}
-        <section className="section">
-          <div className="container">
-            <div className="kicker-row">
-              <div>
-                <div className="eyebrow">Your consultation deliverables</div>
-                <h2 className="serif">One engineered brief.<br />Zero guesswork.</h2>
-              </div>
-              <p>Instead of three high-pressure sales pitches, your consultation delivers a complete technical and financial blueprint tailored to your WA roof and Synergy or Horizon tariff.</p>
-            </div>
-            <div className="grid-4">
-              <div className="card">
-                <div className="icon">01</div>
-                <h3>Roof &amp; Irradiance Model</h3>
-                <p>Panel placement, azimuth, and Perth seasonal yield mapped to your exact property.</p>
-              </div>
-              <div className="card">
-                <div className="icon">02</div>
-                <h3>Synergy &amp; Battery Math</h3>
-                <p>Evening peak self-consumption modelled against 2c daytime export limits and current rebates.</p>
-              </div>
-              <div className="card">
-                <div className="icon">03</div>
-                <h3>Fixed All-In Build Price</h3>
-                <p>Hardware tier, site complexities, and STC/battery rebates locked in upfront with no hidden extras.</p>
-              </div>
-              <div className="card">
-                <div className="icon">04</div>
-                <h3>Vetted WA Match + Reserve</h3>
-                <p>Dispatched to a single CEC-accredited WA electrical contractor backed by our Protection Reserve.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* CTA Band */}
         <section className="section cta-band">
           <div className="container cta-wrap">
@@ -401,8 +331,8 @@ export default function Home() {
             <div>
               <strong>Resources</strong>
               <div className="footer-links" style={{ marginTop: "12px" }}>
-                <a href="#finance">Finance</a>
-                <Link href="/assessment">Assessment</Link>
+                <Link href="/assessment">Solar Assessment</Link>
+                <a href="#escrow">Protection Reserve</a>
               </div>
             </div>
             <div>
