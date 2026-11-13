@@ -45,7 +45,7 @@ export default function AssessmentPage() {
                   Your information builds your engineering brief.
                 </h3>
                 <p className="text-xs sm:text-sm text-[#c7d2d1] leading-relaxed mb-6">
-                  In under 60 seconds, we capture the essential property and tariff details needed to model your roof layout, rebate eligibility, and fixed build price—without sending salespeople to your door.
+                  In under 60 seconds, we capture the essential property and tariff details so a trained design consultant can prepare your roof layout, rebate eligibility, and fixed build price ahead of your consultation.
                 </p>
 
                 <div className="space-y-3 text-xs sm:text-sm">

@@ -22,10 +22,10 @@ export default function Home() {
 
           <nav className={`nav-links ${mobileMenuOpen ? "!flex !flex-col !absolute !top-[68px] !left-0 !right-0 !bg-[#fbfaf7]/98 !p-6 !border-b !border-[#ddd7ca]" : ""}`}>
             <Link className="active" href="/">Home</Link>
-            <a href="#process">How It Works</a>
-            <a href="#philosophy">Why Us</a>
-            <a href="#network">Installer Network</a>
-            <a href="#escrow">Warranty Reserve</a>
+            <a href="#process" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
+            <a href="#why-us" onClick={() => setMobileMenuOpen(false)}>Why Us</a>
+            <a href="#network" onClick={() => setMobileMenuOpen(false)}>Installer Network</a>
+            <a href="#escrow" onClick={() => setMobileMenuOpen(false)}>Warranty Reserve</a>
           </nav>
 
           <div className="nav-cta">
@@ -196,7 +196,7 @@ export default function Home() {
         </section>
 
         {/* Industry Problem: The 3-quote race to the bottom */}
-        <section className="section compare">
+        <section id="why-us" className="section compare" style={{ scrollMarginTop: "78px" }}>
           <div className="container">
             <div className="kicker-row">
               <div>
@@ -323,7 +323,7 @@ export default function Home() {
               <strong>Explore</strong>
               <div className="footer-links" style={{ marginTop: "12px" }}>
                 <a href="#process">How It Works</a>
-                <a href="#philosophy">Why Us</a>
+                <a href="#why-us">Why Us</a>
                 <a href="#network">Installer Network</a>
                 <a href="#escrow">Warranty Reserve</a>
               </div>
